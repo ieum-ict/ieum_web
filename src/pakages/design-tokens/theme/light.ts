@@ -1,38 +1,49 @@
-import type { Theme } from "./types";
 
-export const lightTheme: Theme = {
+export const lightTheme = {
     primary: {
-        normal: "#41BE8E",
+        normal: "#F63F4F",
+        strong: "#F0293A",
+        heavy: "#F01E46"
     },
     label: {
-        normal: "#0C0C0D",
+        normal: "#171719",
         strong: "#000000",
-        neutral: "#3C3E3F",
-        alternative: "#5A5C5D",
-        assistive: "#76787A",
-        inactive: "#999999",
-        disable: "#E6E6E7",
-        buttonText: "#F5F5F5",
-    },
-    line: {
-        normal: "#C1C2C3",
-        neutral: "#DADBDC",
-        alternative: "#E8E8E9",
-    },
-    fill: {
-        normal: "#F7F7F7",
-        neutral: "#E6E6E7",
-        alternative: "#DDDEDF",
+        neutral: "#47484C",
+        alternative: "#858588",
+        assistive: "#C7C8C9",
+        disable: "#DFDFE0",
     },
     background: {
-        normal: "#FFFFFF",
-        neutral: "#F7F7F7",
-        alternative: "#FAFAFA",
+        normal:{
+            normal: "#FFFFFF",
+            alternative: "#F7F7F8",
+        },
+        elevated:{
+            normal: "#FFFFFF",
+            alternative: "#F7F7F8",
+        },
+        transparent:{
+            normal: "#FFFFFF",
+            alternative: "#F7F7F8",
+        },
+    },
+    interaction:{
+        inactive: "#989BA2",
+        disable: "#F4F4F5",
+    },
+    line: {
+        normal: "#E0E0E2",
+        neutral: "#E8E8EA",
+        alternative: "#F4F4F5",
+    },
+    fill: {
+        normal: "#F4F4F5",
+        neutral: "#E8E8EA",
+        alternative: "#F8F8F8",
     },
     status: {
-        error: "#EE2A2B",
-        info:"#1A97FF",
-        success: "#31E87A",
-        warning: "#FFD11A",
+        positive: "#00BF40",
+        cautionary: "#FF9200",
+        destructive: "#F52828",
     }
 };
