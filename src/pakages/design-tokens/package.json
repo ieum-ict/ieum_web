@@ -9,6 +9,6 @@
     "./theme": "./theme/index.ts"
   },
   "peerDependencies": {
-    "tailwindcss": "4.3.0"
+    "tailwindcss": "^4.3.3"
   }
 }
