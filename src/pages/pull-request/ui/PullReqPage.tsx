@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
+import { InputInformation } from './InputInformation'
 import { PullReqCard } from './PullReqCard'
 import type { PullReqStatus } from './PullReqCard'
 
@@ -86,12 +87,21 @@ const pullReqItems: PullReqItem[] = [
 
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
+  const [isInputOpen, setIsInputOpen] = useState(false)
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
 
+  if (isInputOpen) {
+    return (
+      <div style={createThemeVars()}>
+        <InputInformation onBack={() => setIsInputOpen(false)} />
+      </div>
+    )
+  }
+
   return (
     <div style={createThemeVars()}>
-      <main className="transport-page">
+      <main className="transport-page" style={{ position: 'relative' }}>
         <div
           style={{
             display: 'flex',
@@ -190,6 +200,34 @@ export const PullReqPage = () => {
             ))}
           </div>
         </section>
+
+        <button
+          type="button"
+          aria-label="전원 요청 정보 입력"
+          onClick={() => setIsInputOpen(true)}
+          style={{
+            position: 'absolute',
+            right: '20px',
+            bottom: '20px',
+            zIndex: 2,
+            width: '58px',
+            height: '58px',
+            padding: 0,
+            border: 0,
+            borderRadius: '100px',
+            display: 'grid',
+            placeItems: 'center',
+            color: lightTheme.background.normal.normal,
+            fontSize: '44px',
+            fontWeight: 400,
+            lineHeight: 1,
+            background: lightTheme.primary.normal,
+            boxShadow: '0 2px 4px rgb(0 0 0 / 25%)',
+            cursor: 'pointer',
+          }}
+        >
+          +
+        </button>
       </main>
     </div>
   )
