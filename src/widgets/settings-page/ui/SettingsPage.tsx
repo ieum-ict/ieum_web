@@ -2,9 +2,8 @@ import {
   chevronIcon,
   settingsAlarmIcon,
   settingsHospitalInfoIcon,
-  settingsProfileBodyIcon,
   settingsProfileEditIcon,
-  settingsProfileHeadIcon,
+  settingsProfileIcon,
 } from '../../../shared/config/assets'
 import { BottomNavigation, type NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
 
@@ -50,8 +49,7 @@ export function SettingsPage({
       <section className="settings-page__content" aria-label="설정 페이지">
         <div className="settings-page__profile">
           <div className="settings-page__avatar" aria-hidden="true">
-            <img className="settings-page__avatar-body" src={settingsProfileBodyIcon} alt="" draggable="false" />
-            <img className="settings-page__avatar-head" src={settingsProfileHeadIcon} alt="" draggable="false" />
+            <img className="settings-page__avatar-image" src={settingsProfileIcon} alt="" draggable="false" />
           </div>
 
           <div className="settings-page__profile-copy">

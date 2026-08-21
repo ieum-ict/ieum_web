@@ -1227,31 +1227,23 @@
 }
 
 .settings-page__avatar {
-  position: relative;
   width: 108px;
   height: 108px;
   overflow: hidden;
-  border-radius: 44px;
-  background: var(--background-elevated);
+  border-radius: 54px;
+  background: var(--background-normal);
+  display: grid;
+  place-items: center;
 }
 
-.settings-page__avatar-body,
-.settings-page__avatar-head {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+.settings-page__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.settings-page__avatar-body {
-  bottom: -60px;
-  width: 103px;
-  height: 101px;
-}
-
-.settings-page__avatar-head {
-  top: 16px;
-  width: 45px;
-  height: 50px;
+.settings-page__avatar-image.is-photo {
+  object-fit: cover;
 }
 
 .settings-page__profile-copy {
