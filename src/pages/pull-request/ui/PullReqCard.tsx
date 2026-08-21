@@ -1,8 +1,10 @@
 import { lightTheme } from '@ict/design-tokens'
 
+export type PullReqStatus = '진행중' | '대기중' | '응답대기' | '완료'
+
 export type PullReqCardProps = {
   title: string
-  status: '진행중' | '대기중' | '응답대기' | '완료'
+  status: PullReqStatus
   week?: number
   day: number
   symptoms: string[]

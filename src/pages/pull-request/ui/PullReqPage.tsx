@@ -1,10 +1,18 @@
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
 import { PullReqCard } from './PullReqCard'
-import type { PullReqCardProps } from './PullReqCard'
+import type { PullReqStatus } from './PullReqCard'
 
-type PullReqItem = PullReqCardProps & {
+type PullReqItem = {
   id: number
+  title: string
+  status: PullReqStatus
+  week?: number
+  day: number
+  symptoms: string[]
+  isNewborn?: boolean
+  location: string
+  requestedMinutesAgo: number
 }
 
 const pullReqItems: PullReqItem[] = [
