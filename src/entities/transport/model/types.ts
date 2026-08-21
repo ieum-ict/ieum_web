@@ -23,7 +23,7 @@ export type OsrmRouteResponse = {
 }
 
 export type NavigationView = 'request' | 'hospital' | 'setting'
-export type AppView = 'map' | 'update' | 'empty' | NavigationView
+export type AppView = 'map' | 'update' | 'empty'
 export type Severity = 'none' | 'light' | 'heavy'
 export type SeverityField = 'pain' | 'bleeding' | 'amnioticFluidLeak'
 

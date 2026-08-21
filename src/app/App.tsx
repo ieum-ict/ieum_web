@@ -9,10 +9,22 @@ export default function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname)
 
   useEffect(() => {
-    const handleLocationChange = () => setPathname(window.location.pathname)
+    const handleLocationChange = () => {
+      if (window.location.hash) {
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+      }
+
+      setPathname(window.location.pathname)
+    }
 
     window.addEventListener('popstate', handleLocationChange)
-    return () => window.removeEventListener('popstate', handleLocationChange)
+    window.addEventListener('hashchange', handleLocationChange)
+    handleLocationChange()
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange)
+      window.removeEventListener('hashchange', handleLocationChange)
+    }
   }, [])
 
   const handleTabChange = (tab: NavigationTab) => {

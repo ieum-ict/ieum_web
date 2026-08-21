@@ -1,7 +1,6 @@
 import { TransportUpdateForm } from '../../../features/transport-update-form/ui/TransportUpdateForm'
 import { createThemeVars } from '../../../shared/lib/theme'
 import { EmptyTransportState } from '../../../widgets/empty-transport-state/ui/EmptyTransportState'
-import { NavigationPlaceholder } from '../../../widgets/navigation-placeholder/ui/NavigationPlaceholder'
 import { TransportMapView } from '../../../widgets/transport-map/ui/TransportMapView'
 import { useTransportPage } from '../model/useTransportPage'
 import './transport-page.css'
@@ -27,18 +26,6 @@ export function TransportPage() {
     return (
       <div style={createThemeVars()}>
         <EmptyTransportState onPrimaryAction={transportPage.openRequestsFallback} />
-      </div>
-    )
-  }
-
-  if (
-    transportPage.currentView === 'request' ||
-    transportPage.currentView === 'hospital' ||
-    transportPage.currentView === 'setting'
-  ) {
-    return (
-      <div style={createThemeVars()}>
-        <NavigationPlaceholder activeTab={transportPage.currentView} />
       </div>
     )
   }
