@@ -12,7 +12,6 @@ import {
   createOsrmRouteUrl,
   defaultUpdateForm,
   fallbackRouteCoordinates,
-  getViewFromHash,
   initialCenter,
   MAX_ZOOM,
   MIN_ZOOM,
@@ -31,7 +30,6 @@ import type {
   UpdateFormData,
 } from '../../../entities/transport/model/types'
 import { clamp, pointsToPath, project, TILE_SIZE, unproject } from '../../../shared/lib/map'
-import type { NavigationTab } from '../../../widgets/bottom-navigation/ui/BottomNavigation'
 
 function createSheetHandlers(
   sheetRef: MutableRefObject<SheetDragState | null>,
@@ -103,7 +101,7 @@ export function useTransportPage() {
   const [hospitalSheetDragOffset, setHospitalSheetDragOffset] = useState(0)
   const [contactSheetDragOffset, setContactSheetDragOffset] = useState(0)
   const [routeCoordinates, setRouteCoordinates] = useState<Coordinate[]>(fallbackRouteCoordinates)
-  const [currentView, setCurrentView] = useState<AppView>(() => getViewFromHash(window.location.hash))
+  const [currentView, setCurrentView] = useState<AppView>('map')
   const [savedUpdateForm, setSavedUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [draftUpdateForm, setDraftUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [lastUpdatedAt, setLastUpdatedAt] = useState('12:24')
@@ -153,15 +151,6 @@ export function useTransportPage() {
 
     void loadRoadRoute()
     return () => controller.abort()
-  }, [])
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentView(getViewFromHash(window.location.hash))
-    }
-
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
   const projectedCenter = useMemo(() => project(center, zoom), [center, zoom])
@@ -362,28 +351,15 @@ export function useTransportPage() {
     closeTransportSheet()
     setDraftUpdateForm(savedUpdateForm)
     setCurrentView('update')
-    window.location.hash = 'update'
   }
 
   const closeUpdateView = () => {
-    window.location.hash = ''
+    setCurrentView('map')
   }
 
   const openRequestsFallback = () => {
     setHasActiveTransfer(true)
     setCurrentView('map')
-    window.location.hash = ''
-  }
-
-  const openNavigationTab = (tab: NavigationTab) => {
-    if (tab === 'transfer') {
-      setCurrentView('map')
-      window.location.hash = ''
-      return
-    }
-
-    setCurrentView(tab)
-    window.location.hash = tab
   }
 
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)
@@ -475,6 +451,5 @@ export function useTransportPage() {
     submitUpdateForm,
     closeUpdateView,
     openRequestsFallback,
-    openNavigationTab,
   }
 }

@@ -1,7 +1,6 @@
 import { TransportUpdateForm } from '../../../features/transport-update-form/ui/TransportUpdateForm'
 import { createThemeVars } from '../../../shared/lib/theme'
 import { EmptyTransportState } from '../../../widgets/empty-transport-state/ui/EmptyTransportState'
-import { NavigationPlaceholder } from '../../../widgets/navigation-placeholder/ui/NavigationPlaceholder'
 import { TransportMapView } from '../../../widgets/transport-map/ui/TransportMapView'
 import { useTransportPage } from '../model/useTransportPage'
 import './transport-page.css'
@@ -18,7 +17,6 @@ export function TransportPage() {
           onSubmit={transportPage.submitUpdateForm}
           onFieldChange={transportPage.handleUpdateFieldChange}
           onSeverityChange={transportPage.handleSeverityChange}
-          onTabChange={transportPage.openNavigationTab}
         />
       </div>
     )
@@ -27,25 +25,7 @@ export function TransportPage() {
   if (transportPage.currentView === 'empty' || !transportPage.hasActiveTransfer) {
     return (
       <div style={createThemeVars()}>
-        <EmptyTransportState
-          onPrimaryAction={transportPage.openRequestsFallback}
-          onTabChange={transportPage.openNavigationTab}
-        />
-      </div>
-    )
-  }
-
-  if (
-    transportPage.currentView === 'request' ||
-    transportPage.currentView === 'hospital' ||
-    transportPage.currentView === 'setting'
-  ) {
-    return (
-      <div style={createThemeVars()}>
-        <NavigationPlaceholder
-          activeTab={transportPage.currentView}
-          onTabChange={transportPage.openNavigationTab}
-        />
+        <EmptyTransportState onPrimaryAction={transportPage.openRequestsFallback} />
       </div>
     )
   }
@@ -96,7 +76,6 @@ export function TransportPage() {
         onTransportSheetPointerUp={transportPage.transportSheetHandlers.onPointerUp}
         onOpenUpdateView={transportPage.openUpdateView}
         onMarkTransferCompleted={transportPage.markTransferAsCompleted}
-        onTabChange={transportPage.openNavigationTab}
       />
     </div>
   )

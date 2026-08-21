@@ -1,5 +1,4 @@
 import type {
-  AppView,
   Coordinate,
   HandoverChecklistItem,
   HospitalStep,
@@ -65,26 +64,6 @@ export const completedChecklist: HandoverChecklistItem[] = [
   { label: '환자 기록지 전달', checked: false },
   { label: '의료 장비 인계', checked: true },
 ]
-
-export function getViewFromHash(hash: string): AppView {
-  if (hash === '#update') {
-    return 'update'
-  }
-
-  if (hash === '#request') {
-    return 'request'
-  }
-
-  if (hash === '#hospital') {
-    return 'hospital'
-  }
-
-  if (hash === '#setting') {
-    return 'setting'
-  }
-
-  return 'map'
-}
 
 export function createOsrmRouteUrl(start: Coordinate, destination: Coordinate) {
   const coordinates = `${start.lng},${start.lat};${destination.lng},${destination.lat}`
