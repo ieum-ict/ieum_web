@@ -12,49 +12,61 @@ const pullReqItems: PullReqItem[] = [
     id: 1,
     title: '위험 임산부',
     status: '진행중',
-    description: '28주 1일 · 출혈, 진통',
+    week: 28,
+    day: 1,
+    symptoms: ['출혈', '진통'],
     location: '청주시 상당구',
-    requestedAgo: '요청 10분전',
+    requestedMinutesAgo: 10,
   },
   {
     id: 2,
     title: '고위험 산모',
     status: '대기중',
-    description: '34주 4일 · 고혈압, 두통',
+    week: 34,
+    day: 4,
+    symptoms: ['고혈압', '두통'],
     location: '청주시 흥덕구',
-    requestedAgo: '요청 18분전',
+    requestedMinutesAgo: 18,
   },
   {
     id: 3,
     title: '응급 분만 요청',
     status: '진행중',
-    description: '39주 2일 · 양수 파수',
+    week: 39,
+    day: 2,
+    symptoms: ['양수 파수'],
     location: '청주시 서원구',
-    requestedAgo: '요청 25분전',
+    requestedMinutesAgo: 25,
   },
   {
     id: 4,
     title: '신생아 이송',
     status: '응답대기',
-    description: '생후 2일 · 호흡 곤란',
+    day: 2,
+    symptoms: ['호흡 곤란'],
+    isNewborn: true,
     location: '청주시 청원구',
-    requestedAgo: '요청 32분전',
+    requestedMinutesAgo: 32,
   },
   {
     id: 5,
     title: '위험 임산부',
     status: '대기중',
-    description: '31주 6일 · 복통, 발열',
+    week: 31,
+    day: 6,
+    symptoms: ['복통', '발열'],
     location: '증평군 증평읍',
-    requestedAgo: '요청 41분전',
+    requestedMinutesAgo: 41,
   },
   {
     id: 6,
     title: '산모 응급 요청',
     status: '완료',
-    description: '36주 0일 · 태동 감소',
+    week: 36,
+    day: 0,
+    symptoms: ['태동 감소'],
     location: '괴산군 괴산읍',
-    requestedAgo: '요청 48분전',
+    requestedMinutesAgo: 48,
   },
 ]
 
@@ -87,9 +99,12 @@ export const PullReqPage = () => {
                 key={item.id}
                 title={item.title}
                 status={item.status}
-                description={item.description}
+                week={item.week}
+                day={item.day}
+                symptoms={item.symptoms}
+                isNewborn={item.isNewborn}
                 location={item.location}
-                requestedAgo={item.requestedAgo}
+                requestedMinutesAgo={item.requestedMinutesAgo}
               />
             ))}
           </div>

@@ -3,9 +3,12 @@ import { lightTheme } from '@ict/design-tokens'
 export type PullReqCardProps = {
   title: string
   status: '진행중' | '대기중' | '응답대기' | '완료'
-  description: string
+  week?: number
+  day: number
+  symptoms: string[]
+  isNewborn?: boolean
   location: string
-  requestedAgo: string
+  requestedMinutesAgo: number
 }
 
 const statusColors: Record<PullReqCardProps['status'], string> = {
@@ -15,7 +18,19 @@ const statusColors: Record<PullReqCardProps['status'], string> = {
   완료: lightTheme.status.positive,
 }
 
-export const PullReqCard = ({ title, status, description, location, requestedAgo }: PullReqCardProps) => {
+export const PullReqCard = ({
+  title,
+  status,
+  week,
+  day,
+  symptoms,
+  isNewborn = false,
+  location,
+  requestedMinutesAgo,
+}: PullReqCardProps) => {
+  const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
+  const description = `${conditionText} · ${symptoms.join(', ')}`
+
   return (
     <article
       style={{
@@ -99,7 +114,7 @@ export const PullReqCard = ({ title, status, description, location, requestedAgo
             lineHeight: 1.45,
           }}
         >
-          {requestedAgo}
+          요청 {requestedMinutesAgo}분전
         </p>
       </div>
     </article>
