@@ -4,6 +4,7 @@ import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
 import { InputInformation } from './input-info/InputInformation'
 import { PullReqCard } from './PullReqCard'
+import { PullReqDetailPage } from './PullReqDetailPage'
 import type { PullReqStatus } from './PullReqCard'
 
 type PullReqFilter = '전체' | PullReqStatus
@@ -88,6 +89,7 @@ const pullReqItems: PullReqItem[] = [
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
   const [isInputOpen, setIsInputOpen] = useState(false)
+  const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqItem | null>(null)
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
 
@@ -103,6 +105,21 @@ export const PullReqPage = () => {
     return (
       <div style={createThemeVars()}>
         <InputInformation onBack={() => setIsInputOpen(false)} onSave={closeInputForm} />
+      </div>
+    )
+  }
+
+  if (selectedPullReqItem) {
+    return (
+      <div style={createThemeVars()}>
+        <PullReqDetailPage
+          title={selectedPullReqItem.title}
+          status={selectedPullReqItem.status}
+          week={selectedPullReqItem.week}
+          day={selectedPullReqItem.day}
+          symptoms={selectedPullReqItem.symptoms}
+          isNewborn={selectedPullReqItem.isNewborn}
+        />
       </div>
     )
   }
@@ -204,6 +221,7 @@ export const PullReqPage = () => {
                 isNewborn={item.isNewborn}
                 location={item.location}
                 requestedMinutesAgo={item.requestedMinutesAgo}
+                onClick={() => setSelectedPullReqItem(item)}
               />
             ))}
           </div>
