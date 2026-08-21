@@ -178,6 +178,11 @@
   color: #c7c8c9;
 }
 
+.input-information__input::placeholder {
+  color: var(--label-assistive);
+  opacity: 1;
+}
+
 .update-field__input strong {
   font-size: 18px;
   font-weight: 600;

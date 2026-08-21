@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../shared/config/assets'
 
 type InputInformationProps = {
   onBack: () => void
 }
+
+type FetusType = 'single' | 'multiple'
 
 function InputField({
   label,
@@ -18,6 +21,9 @@ function InputField({
   placeholder?: string
   width?: string
 }) {
+  const [inputValue, setInputValue] = useState(value ?? '')
+  const hasValue = inputValue.length > 0
+
   return (
     <label
       style={{
@@ -51,15 +57,17 @@ function InputField({
         }}
       >
         <input
+          className="input-information__input"
           type="text"
-          defaultValue={value}
+          value={inputValue}
           placeholder={placeholder}
+          onChange={(event) => setInputValue(event.target.value)}
           style={{
             width: '100%',
             minWidth: 0,
             padding: 0,
             border: 0,
-            color: lightTheme.label.assistive,
+            color: hasValue ? lightTheme.label.strong : lightTheme.label.assistive,
             fontSize: '16px',
             fontWeight: 400,
             lineHeight: 1.3,
@@ -71,7 +79,7 @@ function InputField({
           <strong
             style={{
               flex: '0 0 auto',
-              color: lightTheme.label.assistive,
+              color: hasValue ? lightTheme.label.strong : lightTheme.label.assistive,
               fontSize: '18px',
               fontWeight: 600,
               lineHeight: 1.3,
@@ -86,6 +94,24 @@ function InputField({
 }
 
 export function InputInformation({ onBack }: InputInformationProps) {
+  const [selectedFetusType, setSelectedFetusType] = useState<FetusType>('single')
+
+  const getFetusTypeButtonStyle = (type: FetusType) => {
+    const isSelected = selectedFetusType === type
+
+    return {
+      height: '42px',
+      border: `1px solid ${isSelected ? lightTheme.primary.normal : lightTheme.label.disable}`,
+      borderRadius: '100px',
+      color: isSelected ? lightTheme.primary.normal : lightTheme.label.assistive,
+      fontSize: '16px',
+      fontWeight: isSelected ? 500 : 400,
+      lineHeight: 1.3,
+      background: lightTheme.background.elevated.normal,
+      cursor: 'pointer',
+    }
+  }
+
   return (
     <main className="transport-page">
       <header className="update-header">
@@ -176,8 +202,8 @@ export function InputInformation({ onBack }: InputInformationProps) {
                   gap: '15px',
                 }}
               >
-                <InputField value="28" unit="주" />
-                <InputField value="3" unit="일" />
+                <InputField placeholder="임신 주수를 입력해주세요" unit="주" />
+                <InputField placeholder="일수를 입력해주세요" unit="일" />
               </div>
             </div>
 
@@ -202,40 +228,24 @@ export function InputInformation({ onBack }: InputInformationProps) {
               >
                 <button
                   type="button"
-                  style={{
-                    height: '42px',
-                    border: `1px solid ${lightTheme.primary.normal}`,
-                    borderRadius: '100px',
-                    color: lightTheme.primary.normal,
-                    fontSize: '16px',
-                    fontWeight: 500,
-                    lineHeight: 1.3,
-                    background: lightTheme.background.elevated.normal,
-                    cursor: 'pointer',
-                  }}
+                  aria-pressed={selectedFetusType === 'single'}
+                  onClick={() => setSelectedFetusType('single')}
+                  style={getFetusTypeButtonStyle('single')}
                 >
                   단태아
                 </button>
                 <button
                   type="button"
-                  style={{
-                    height: '42px',
-                    border: `1px solid ${lightTheme.label.disable}`,
-                    borderRadius: '100px',
-                    color: lightTheme.label.assistive,
-                    fontSize: '16px',
-                    fontWeight: 400,
-                    lineHeight: 1.3,
-                    background: lightTheme.background.elevated.normal,
-                    cursor: 'pointer',
-                  }}
+                  aria-pressed={selectedFetusType === 'multiple'}
+                  onClick={() => setSelectedFetusType('multiple')}
+                  style={getFetusTypeButtonStyle('multiple')}
                 >
                   다태아
                 </button>
               </div>
             </div>
 
-            <InputField label="연령대" value="32" unit="세" />
+            <InputField label="연령대" placeholder="나이를 입력해주세요" unit="세" />
             <InputField label="현재 위치" placeholder="현재 위치를 입력해주세요" />
           </div>
         </div>
