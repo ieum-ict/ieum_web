@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PullReqPage } from '../pages/pull-request/ui/PullReqPage'
 import { TransportPage } from '../pages/transport-page'
 
 type AppRoute = {
@@ -17,7 +18,7 @@ export const routes: AppRoute[] = [
   },
     {
         path: '/pull-request',
-        element: <TransportPage />,
+        element: <PullReqPage />,
     },
 ]
 
