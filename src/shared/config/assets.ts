@@ -1,0 +1,12 @@
+export const hospitalIcon = new URL('../../assets/transport/hospital.svg', import.meta.url).href
+export const reportIcon = new URL('../../assets/transport/report.svg', import.meta.url).href
+export const chevronIcon = new URL('../../assets/transport/chevron.svg', import.meta.url).href
+export const ambulanceImage = new URL('../../assets/transport/ambulance.png', import.meta.url).href
+export const herePinIcon = new URL('../../assets/transport/here-pin.svg', import.meta.url).href
+export const carIcon = new URL('../../assets/transport/car.svg', import.meta.url).href
+export const destinationDotIcon = new URL('../../assets/transport/destination-dot.svg', import.meta.url).href
+export const panelCarIcon = new URL('../../assets/transport/panel-car.svg', import.meta.url).href
+export const clapIcon = new URL('../../assets/transport/clap.svg', import.meta.url).href
+export const checkBoxFillIcon = new URL('../../assets/transport/check-box-fill.svg', import.meta.url).href
+export const checkBoxIcon = new URL('../../assets/transport/check-box.svg', import.meta.url).href
+export const noTransferEmojiIcon = 'https://www.figma.com/api/mcp/asset/11644d14-98a3-45b6-95f9-aa05ed4aa78f.svg'
