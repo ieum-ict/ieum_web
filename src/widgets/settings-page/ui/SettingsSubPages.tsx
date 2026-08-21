@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from 'react'
 import {
   chevronIcon,
   hospitalIcon,
@@ -301,6 +301,39 @@ function DetailRow({ label, value }: { label: string; value: string | ReactNode 
   )
 }
 
+function DetailInputRow({
+  label,
+  value,
+  unit,
+  onChange,
+  onKeyDown,
+  onBlur,
+}: {
+  label: string
+  value: string
+  unit?: string
+  onChange: (value: string) => void
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <label className="hospital-detail-row hospital-detail-row--input">
+      <span>{label}</span>
+      <div className="hospital-detail-input">
+        <input
+          type="text"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onKeyDown={onKeyDown}
+          onBlur={onBlur}
+          inputMode="numeric"
+        />
+        {unit ? <strong>{unit}</strong> : null}
+      </div>
+    </label>
+  )
+}
+
 export function HospitalDetailPage({
   item,
   onBack,
@@ -308,31 +341,121 @@ export function HospitalDetailPage({
   onSave,
   onTabChange,
 }: HospitalDetailPageProps) {
+  const [draftItem, setDraftItem] = useState(item)
+
+  useEffect(() => {
+    setDraftItem(item)
+  }, [item])
+
+  const hasChanges = JSON.stringify(draftItem) !== JSON.stringify(item)
+
+  const handleFieldChange = (field: keyof HospitalManagementItem, value: string) => {
+    setDraftItem((currentValue) => ({
+      ...currentValue,
+      [field]: value,
+    }))
+  }
+
+  const handleDetailFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+
+    event.preventDefault()
+    event.currentTarget.blur()
+  }
+
+  const handleDetailFieldBlur =
+    (field: keyof HospitalManagementItem, prefix = '', suffix = '') =>
+    (event: React.FocusEvent<HTMLInputElement>) => {
+      const nextValue = event.currentTarget.value.trim()
+      if (nextValue !== '') {
+        return
+      }
+
+      handleFieldChange(field, `${prefix}0${suffix}`)
+    }
+
   return (
-    <SettingsShell title="자원 상세" onBack={onBack} onTabChange={onTabChange}>
+    <SettingsShell title="자원 상세" onBack={onBack} onTabChange={onTabChange} headerClassName="hospital-detail-page__header">
       <div className="hospital-detail-page">
         <div className="hospital-detail-page__content">
           <div className="hospital-detail-page__summary">
-            <DetailRow label="병원명" value={`${item.name}${item.branch ? ` (${item.branch})` : ''}`} />
-            <DetailRow label="거리" value={item.distance} />
+            <DetailRow label="병원명" value={`${draftItem.name}${draftItem.branch ? ` (${draftItem.branch})` : ''}`} />
+            <DetailRow label="거리" value={draftItem.distance} />
           </div>
 
           <section className="hospital-detail-page__panel">
             <h2>자원 현황</h2>
             <div className="hospital-detail-page__list">
-              <DetailRow label="산부인과 전문의" value={item.obstetricians.replace('산부인과 전문의 ', '')} />
-              <DetailRow label="신생아 전문의" value={item.neonatologists ?? '7명'} />
-              <DetailRow label="마취과 전문의" value={item.anesthesiologists ?? '6명'} />
-              <DetailRow label="수술실" value={item.operatingRooms.replace('수술실 ', '')} />
-              <DetailRow label="분만실" value={item.deliveryRooms ?? '6개'} />
-              <DetailRow label="NICU 병상" value={item.nicuBeds.replace('NICU병상 ', '')} />
-              <DetailRow label="인큐베이터" value={item.incubators ?? '6개'} />
+              <DetailInputRow
+                label="산부인과 전문의"
+                value={draftItem.obstetricians.replace('산부인과 전문의 ', '').replace('명', '')}
+                unit="명"
+                onChange={(value) => handleFieldChange('obstetricians', `산부인과 전문의 ${value}명`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('obstetricians', '산부인과 전문의 ', '명')}
+              />
+              <DetailInputRow
+                label="신생아 전문의"
+                value={(draftItem.neonatologists ?? '7명').replace('명', '')}
+                unit="명"
+                onChange={(value) => handleFieldChange('neonatologists', `${value}명`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('neonatologists', '', '명')}
+              />
+              <DetailInputRow
+                label="마취과 전문의"
+                value={(draftItem.anesthesiologists ?? '6명').replace('명', '')}
+                unit="명"
+                onChange={(value) => handleFieldChange('anesthesiologists', `${value}명`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('anesthesiologists', '', '명')}
+              />
+              <DetailInputRow
+                label="수술실"
+                value={draftItem.operatingRooms.replace('수술실 ', '').replace('개', '')}
+                unit="개"
+                onChange={(value) => handleFieldChange('operatingRooms', `수술실 ${value}개`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('operatingRooms', '수술실 ', '개')}
+              />
+              <DetailInputRow
+                label="분만실"
+                value={(draftItem.deliveryRooms ?? '6개').replace('개', '')}
+                unit="개"
+                onChange={(value) => handleFieldChange('deliveryRooms', `${value}개`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('deliveryRooms', '', '개')}
+              />
+              <DetailInputRow
+                label="NICU 병상"
+                value={draftItem.nicuBeds.replace('NICU병상 ', '').replace('개', '')}
+                unit="개"
+                onChange={(value) => handleFieldChange('nicuBeds', `NICU병상 ${value}개`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('nicuBeds', 'NICU병상 ', '개')}
+              />
+              <DetailInputRow
+                label="인큐베이터"
+                value={(draftItem.incubators ?? '6개').replace('개', '')}
+                unit="개"
+                onChange={(value) => handleFieldChange('incubators', `${value}개`)}
+                onKeyDown={handleDetailFieldKeyDown}
+                onBlur={handleDetailFieldBlur('incubators', '', '개')}
+              />
               <div className="hospital-detail-row hospital-detail-row--toggle">
                 <span>수혈 가능 여부</span>
                 <button
-                  className={`alert-settings-toggle ${item.transfusionAvailable !== false ? 'is-on' : ''}`}
+                  className={`alert-settings-toggle ${draftItem.transfusionAvailable !== false ? 'is-on' : ''}`}
                   type="button"
-                  aria-pressed={item.transfusionAvailable !== false}
+                  aria-pressed={draftItem.transfusionAvailable !== false}
+                  onClick={() =>
+                    setDraftItem((currentValue) => ({
+                      ...currentValue,
+                      transfusionAvailable: currentValue.transfusionAvailable === false,
+                    }))
+                  }
                 >
                   <span />
                 </button>
@@ -345,7 +468,12 @@ export function HospitalDetailPage({
           <button className="settings-action settings-action--secondary" type="button" onClick={onClose}>
             닫기
           </button>
-          <button className="settings-action settings-action--primary" type="button" onClick={onSave}>
+          <button
+            className="settings-action settings-action--primary"
+            type="button"
+            onClick={() => onSave(draftItem)}
+            disabled={!hasChanges}
+          >
             저장
           </button>
         </div>
@@ -523,56 +651,203 @@ export function HospitalAddPage({
 }
 
 export function ProfileEditPage({ onBack, onTabChange }: ProfileEditPageProps) {
+  const inputId = useId()
+  const initialProfileForm = {
+    name: '김지현',
+    role: '이송 코디네이터',
+    organization: '서울대학교 병원',
+    department: '응급의료센터/간호사',
+    email: 'rlawlgus@gmail.com',
+    phone: '010-1234-5678',
+    emergencyPhone: '010-5678-1234',
+    region: '서울특별시',
+  }
+  const [savedProfilePreview, setSavedProfilePreview] = useState(settingsProfileIcon)
+  const [profilePreview, setProfilePreview] = useState(settingsProfileIcon)
+  const isCustomProfileImage = profilePreview !== settingsProfileIcon
+  const [savedProfileForm, setSavedProfileForm] = useState(initialProfileForm)
+  const [profileForm, setProfileForm] = useState(initialProfileForm)
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const hasProfileChanges =
+    profilePreview !== savedProfilePreview ||
+    Object.entries(savedProfileForm).some(([key, value]) => profileForm[key as keyof typeof savedProfileForm] !== value)
+
+  useEffect(() => {
+    return () => {
+      if (profilePreview !== settingsProfileIcon) {
+        URL.revokeObjectURL(profilePreview)
+      }
+    }
+  }, [profilePreview])
+
+  useEffect(() => {
+    if (!isSaveModalOpen) {
+      document.body.style.overflow = ''
+      return
+    }
+
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isSaveModalOpen])
+
+  const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0]
+    if (!nextFile) {
+      return
+    }
+
+    setProfilePreview((currentValue) => {
+      if (currentValue !== settingsProfileIcon) {
+        URL.revokeObjectURL(currentValue)
+      }
+
+      return URL.createObjectURL(nextFile)
+    })
+
+    event.target.value = ''
+  }
+
+  const handleProfileFieldChange = (field: keyof typeof initialProfileForm, value: string) => {
+    setProfileForm((currentValue) => ({
+      ...currentValue,
+      [field]: value,
+    }))
+  }
+
+  const handleProfileFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') {
+      return
+    }
+
+    event.preventDefault()
+    event.currentTarget.blur()
+  }
+
+  const handleProfileSubmit = () => {
+    if (!hasProfileChanges) {
+      return
+    }
+
+    setSavedProfileForm(profileForm)
+    setSavedProfilePreview(profilePreview)
+    setIsSaveModalOpen(true)
+  }
+
   return (
     <SettingsShell title="회원정보 수정" onBack={onBack} onTabChange={onTabChange}>
       <div className="profile-edit-page">
         <div className="profile-edit-page__avatar-wrap">
-          <div className="settings-page__avatar" aria-hidden="true">
-            <img className="settings-page__avatar-body" src={settingsProfileBodyIcon} alt="" draggable="false" />
-            <img className="settings-page__avatar-head" src={settingsProfileHeadIcon} alt="" draggable="false" />
-          </div>
-          <button className="profile-edit-page__camera" type="button" aria-label="프로필 사진 변경">
+          <input
+            id={inputId}
+            className="profile-edit-page__file-input"
+            type="file"
+            accept="image/*"
+            onChange={handleProfileImageChange}
+          />
+          <label className="settings-page__avatar profile-edit-page__avatar-button" htmlFor={inputId} aria-label="프로필 사진 등록">
+            <img
+              className={`settings-page__avatar-image ${isCustomProfileImage ? 'is-photo' : ''}`}
+              src={profilePreview}
+              alt=""
+              draggable="false"
+            />
+          </label>
+          <label className="profile-edit-page__camera" htmlFor={inputId} aria-label="프로필 사진 변경">
             <img src={settingsCameraIcon} alt="" draggable="false" />
-          </button>
+          </label>
         </div>
 
-        <section className="profile-edit-section">
-          <h2>기본 정보</h2>
-          <div className="profile-edit-section__list">
-            {[
-              ['이름', '김지현'],
-              ['역할', '이송 코디네이터'],
-              ['소속', '서울대학교 병원'],
-              ['부서/직책', '응급의료센터/간호사'],
-            ].map(([label, value]) => (
-              <div key={label} className="profile-edit-row">
-                <span>{label}</span>
-                <div>{value}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <form
+          className="profile-edit-page__form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const activeElement = document.activeElement
+            if (activeElement instanceof HTMLElement) {
+              activeElement.blur()
+            }
+            handleProfileSubmit()
+          }}
+        >
+          <section className="profile-edit-section">
+            <h2>기본 정보</h2>
+            <div className="profile-edit-section__list">
+              {[
+                ['이름', 'name'],
+                ['역할', 'role'],
+                ['소속', 'organization'],
+                ['부서/직책', 'department'],
+              ].map(([label, field]) => (
+                <div key={label} className="profile-edit-row">
+                  <span>{label}</span>
+                  <input
+                    type="text"
+                    value={profileForm[field as keyof typeof initialProfileForm]}
+                    onChange={(event) =>
+                      handleProfileFieldChange(field as keyof typeof initialProfileForm, event.target.value)
+                    }
+                    onKeyDown={handleProfileFieldKeyDown}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <section className="profile-edit-section">
-          <h2>연락 정보</h2>
-          <div className="profile-edit-section__list">
-            {[
-              ['이메일', 'rlawlgus@gmail.com'],
-              ['연락처', '010-1234-5678'],
-              ['비상 연락처', '010-5678-1234'],
-              ['근무 지역', '서울특별시'],
-            ].map(([label, value]) => (
-              <div key={label} className="profile-edit-row">
-                <span>{label}</span>
-                <div>{value}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+          <section className="profile-edit-section">
+            <h2>연락 정보</h2>
+            <div className="profile-edit-section__list">
+              {[
+                ['이메일', 'email'],
+                ['연락처', 'phone'],
+                ['비상 연락처', 'emergencyPhone'],
+                ['근무 지역', 'region'],
+              ].map(([label, field]) => (
+                <div key={label} className="profile-edit-row">
+                  <span>{label}</span>
+                  <input
+                    type="text"
+                    value={profileForm[field as keyof typeof initialProfileForm]}
+                    onChange={(event) =>
+                      handleProfileFieldChange(field as keyof typeof initialProfileForm, event.target.value)
+                    }
+                    onKeyDown={handleProfileFieldKeyDown}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <button className="settings-action settings-action--primary profile-edit-page__submit" type="button">
-          저장
-        </button>
+          <button
+            className="settings-action settings-action--primary profile-edit-page__submit"
+            type="submit"
+            disabled={!hasProfileChanges}
+          >
+            저장
+          </button>
+        </form>
+
+        {isSaveModalOpen ? (
+          <div className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="profile-save-modal-title">
+            <button
+              className="settings-modal__backdrop"
+              type="button"
+              aria-label="저장 완료 모달 닫기"
+              onClick={() => setIsSaveModalOpen(false)}
+            />
+            <div className="settings-modal__panel">
+              <h2 id="profile-save-modal-title">저장이 완료되었습니다.</h2>
+              <button
+                className="settings-action settings-action--primary settings-modal__confirm"
+                type="button"
+                onClick={() => setIsSaveModalOpen(false)}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </SettingsShell>
   )
