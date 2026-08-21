@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import type { PullReqStatus } from './PullReqCard'
+import { ResourceDetailPage } from './ResourceDetailPage'
 
 type PullReqDetailPageProps = {
   title: string
@@ -48,6 +50,11 @@ export function PullReqDetailPage({
 }: PullReqDetailPageProps) {
   const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
   const description = `${conditionText} · ${symptoms.join(', ')}`
+  const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
+
+  if (isResourceDetailOpen) {
+    return <ResourceDetailPage onBack={() => setIsResourceDetailOpen(false)} />
+  }
 
   return (
     <main className="transport-page">
@@ -261,6 +268,7 @@ export function PullReqDetailPage({
 
           <button
             type="button"
+            onClick={() => setIsResourceDetailOpen(true)}
             style={{
                 width: '100%',
                 height: '42px',
