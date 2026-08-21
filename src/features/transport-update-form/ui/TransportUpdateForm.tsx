@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react'
 import { severityLabels } from '../../../entities/transport/model/constants'
 import type { Severity, SeverityField, UpdateFormData } from '../../../entities/transport/model/types'
 import { chevronIcon } from '../../../shared/config/assets'
+import { BottomNavigation, type NavigationTab } from '../../../widgets/bottom-navigation/ui/BottomNavigation'
 
 type TransportUpdateFormProps = {
   draftUpdateForm: UpdateFormData
@@ -9,6 +10,7 @@ type TransportUpdateFormProps = {
   onSubmit: () => void
   onFieldChange: (field: keyof UpdateFormData, value: string) => void
   onSeverityChange: (field: SeverityField, value: Severity) => void
+  onTabChange: (tab: NavigationTab) => void
 }
 
 function renderTextInput(
@@ -41,6 +43,7 @@ export function TransportUpdateForm({
   onSubmit,
   onFieldChange,
   onSeverityChange,
+  onTabChange,
 }: TransportUpdateFormProps) {
   return (
     <main className="transport-page transport-page--update">
@@ -143,6 +146,8 @@ export function TransportUpdateForm({
           </button>
         </div>
       </section>
+
+      <BottomNavigation activeTab="transfer" onTabChange={onTabChange} />
     </main>
   )
 }

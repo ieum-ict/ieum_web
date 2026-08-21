@@ -31,6 +31,7 @@ import type {
   UpdateFormData,
 } from '../../../entities/transport/model/types'
 import { clamp, pointsToPath, project, TILE_SIZE, unproject } from '../../../shared/lib/map'
+import type { NavigationTab } from '../../../widgets/bottom-navigation/ui/BottomNavigation'
 
 function createSheetHandlers(
   sheetRef: MutableRefObject<SheetDragState | null>,
@@ -371,6 +372,18 @@ export function useTransportPage() {
   const openRequestsFallback = () => {
     setHasActiveTransfer(true)
     setCurrentView('map')
+    window.location.hash = ''
+  }
+
+  const openNavigationTab = (tab: NavigationTab) => {
+    if (tab === 'transfer') {
+      setCurrentView('map')
+      window.location.hash = ''
+      return
+    }
+
+    setCurrentView(tab)
+    window.location.hash = tab
   }
 
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)
@@ -462,5 +475,6 @@ export function useTransportPage() {
     submitUpdateForm,
     closeUpdateView,
     openRequestsFallback,
+    openNavigationTab,
   }
 }

@@ -14,6 +14,8 @@ import {
   reportIcon,
   chevronIcon,
 } from '../../../shared/config/assets'
+import { BottomNavigation } from '../../bottom-navigation/ui/BottomNavigation'
+import type { NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
 
 type Tile = {
   id: string
@@ -66,6 +68,7 @@ type TransportMapViewProps = {
   onTransportSheetPointerUp: (event: PointerEvent<HTMLElement>) => void
   onOpenUpdateView: () => void
   onMarkTransferCompleted: (event: MouseEvent<HTMLButtonElement>) => void
+  onTabChange: (tab: NavigationTab) => void
 }
 
 export function TransportMapView({
@@ -112,9 +115,10 @@ export function TransportMapView({
   onTransportSheetPointerUp,
   onOpenUpdateView,
   onMarkTransferCompleted,
+  onTabChange,
 }: TransportMapViewProps) {
   return (
-    <main className="transport-page">
+    <main className="transport-page transport-page--with-nav">
       <header className="transport-header">
         <h1>이송 경로 확인</h1>
       </header>
@@ -447,6 +451,7 @@ export function TransportMapView({
           </aside>
         </div>
       </section>
+      <BottomNavigation activeTab="transfer" onTabChange={onTabChange} />
     </main>
   )
 }

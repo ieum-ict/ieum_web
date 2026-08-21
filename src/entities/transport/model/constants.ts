@@ -67,7 +67,23 @@ export const completedChecklist: HandoverChecklistItem[] = [
 ]
 
 export function getViewFromHash(hash: string): AppView {
-  return hash === '#update' ? 'update' : 'map'
+  if (hash === '#update') {
+    return 'update'
+  }
+
+  if (hash === '#request') {
+    return 'request'
+  }
+
+  if (hash === '#hospital') {
+    return 'hospital'
+  }
+
+  if (hash === '#setting') {
+    return 'setting'
+  }
+
+  return 'map'
 }
 
 export function createOsrmRouteUrl(start: Coordinate, destination: Coordinate) {
