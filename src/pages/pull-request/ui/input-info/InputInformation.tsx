@@ -209,8 +209,8 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
                   gap: '15px',
                 }}
               >
-                <InputField placeholder="임신 주수를 입력해주세요" unit="주" />
-                <InputField placeholder="일수를 입력해주세요" unit="일" />
+                <InputField placeholder="임신 주수" unit="주" />
+                <InputField placeholder="임신 일수" unit="일" />
               </div>
             </div>
 

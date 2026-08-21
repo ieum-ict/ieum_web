@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
+import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
 import { InputInformation } from './input-info/InputInformation'
@@ -243,16 +244,29 @@ export const PullReqPage = () => {
             borderRadius: '100px',
             display: 'grid',
             placeItems: 'center',
-            color: lightTheme.background.normal.normal,
-            fontSize: '44px',
-            fontWeight: 400,
-            lineHeight: 1,
             background: lightTheme.primary.normal,
             boxShadow: '0 2px 4px rgb(0 0 0 / 25%)',
             cursor: 'pointer',
           }}
         >
-          +
+          <span
+            style={{
+              width: '44px',
+              height: '44px',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <img
+              src={plusIcon}
+              alt=""
+              draggable="false"
+              style={{
+                width: '25.67px',
+                height: '25.67px',
+              }}
+            />
+          </span>
         </button>
       </main>
     </div>
