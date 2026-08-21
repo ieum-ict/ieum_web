@@ -1,7 +1,11 @@
+import { useState } from 'react'
+import { lightTheme } from '@ict/design-tokens'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
 import { PullReqCard } from './PullReqCard'
 import type { PullReqStatus } from './PullReqCard'
+
+type PullReqFilter = '전체' | PullReqStatus
 
 type PullReqItem = {
   id: number
@@ -14,6 +18,8 @@ type PullReqItem = {
   location: string
   requestedMinutesAgo: number
 }
+
+const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '응답대기', '완료']
 
 const pullReqItems: PullReqItem[] = [
   {
@@ -79,12 +85,79 @@ const pullReqItems: PullReqItem[] = [
 ]
 
 export const PullReqPage = () => {
+  const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
+  const filteredPullReqItems =
+    selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
+
   return (
     <div style={createThemeVars()}>
       <main className="transport-page">
-        <header className="transport-header">
-          <h1>이송 요청 확인</h1>
-        </header>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            padding: '16px 20px 12px',
+            background: 'var(--fill-alternative)',
+          }}
+        >
+          <p
+            style={{
+              width: '100%',
+              margin: 0,
+              color: lightTheme.label.neutral,
+              fontSize: '20px',
+              fontWeight: 600,
+              lineHeight: 1.3,
+            }}
+          >
+            전원 요청
+          </p>
+
+          <div
+            role="tablist"
+            aria-label="이송 요청 상태 필터"
+            style={{
+              width: '100%',
+              height: '43px',
+              padding: '5px',
+              borderRadius: '10px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gap: '6px',
+              background: lightTheme.line.neutral,
+            }}
+          >
+            {pullReqFilters.map((filter) => {
+              const isSelected = selectedFilter === filter
+
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => setSelectedFilter(filter)}
+                  style={{
+                    minWidth: 0,
+                    height: '33px',
+                    padding: 0,
+                    border: 0,
+                    borderRadius: '10px',
+                    color: isSelected ? lightTheme.label.neutral : lightTheme.interaction.inactive,
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                    background: isSelected ? lightTheme.background.normal.normal : 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {filter}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <section
           aria-label="이송 요청 목록"
@@ -102,7 +175,7 @@ export const PullReqPage = () => {
               gap: '12px',
             }}
           >
-            {pullReqItems.map((item) => (
+            {filteredPullReqItems.map((item) => (
               <PullReqCard
                 key={item.id}
                 title={item.title}
