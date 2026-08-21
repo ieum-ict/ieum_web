@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
-import { InputInformation } from './InputInformation'
+import { InputInformation } from './input-info/InputInformation'
 import { PullReqCard } from './PullReqCard'
 import type { PullReqStatus } from './PullReqCard'
 

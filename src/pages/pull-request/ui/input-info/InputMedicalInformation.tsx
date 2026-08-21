@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
-import { chevronIcon } from '../../../shared/config/assets'
+import { chevronIcon } from '../../../../shared/config/assets'
 import { InputFinalInformation } from './InputFinalInformation'
 
 type InputMedicalInformationProps = {
