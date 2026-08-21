@@ -2,7 +2,10 @@ import type {
   AppView,
   Coordinate,
   HandoverChecklistItem,
+  HospitalAddForm,
+  HospitalManagementItem,
   HospitalStep,
+  NotificationSettingItem,
   Severity,
   UpdateFormData,
 } from './types'
@@ -66,6 +69,110 @@ export const completedChecklist: HandoverChecklistItem[] = [
   { label: '의료 장비 인계', checked: true },
 ]
 
+export const notificationSettings: NotificationSettingItem[] = [
+  { id: 'transfer-request', title: '전원 요청 알림', description: '새로운 전원 요청 도착 시', enabled: true },
+  { id: 'hospital-response', title: '병원 응답 도착', description: '병원의 응답이 도착했을 때', enabled: true },
+  { id: 'hospital-change', title: '수용 가능 병원 변경', description: '수용 가능 병원 목록 변경 시', enabled: true },
+  { id: 'transfer-status', title: '이송 상태 변경', description: '이송 상태가 변경될 때', enabled: true },
+  { id: 'patient-update', title: '환자 상태 업데이트', description: '환자 상태 정보가 업데이트될 때', enabled: true },
+  { id: 'system-notice', title: '시스템 공지', description: '시스템 점검 및 공지사항', enabled: false },
+]
+
+export const hospitalManagementItems: HospitalManagementItem[] = [
+  {
+    id: 'hospital-a',
+    name: 'A대학교병원',
+    distance: '18km',
+    travelTime: '차량 16분',
+    obstetricians: '산부인과 전문의 12명',
+    nicuBeds: 'NICU병상 18개',
+    operatingRooms: '수술실 5개',
+    status: 'available',
+    branch: '본원',
+    neonatologists: '7명',
+    anesthesiologists: '6명',
+    deliveryRooms: '6개',
+    incubators: '6개',
+    transfusionAvailable: true,
+  },
+  {
+    id: 'hospital-b',
+    name: 'A대학교병원',
+    distance: '18km',
+    travelTime: '차량 16분',
+    obstetricians: '산부인과 전문의 12명',
+    nicuBeds: 'NICU병상 18개',
+    operatingRooms: '수술실 5개',
+    status: 'available',
+    branch: '분원',
+    neonatologists: '7명',
+    anesthesiologists: '6명',
+    deliveryRooms: '6개',
+    incubators: '6개',
+    transfusionAvailable: true,
+  },
+  {
+    id: 'hospital-c',
+    name: 'A대학교병원',
+    distance: '18km',
+    travelTime: '차량 16분',
+    obstetricians: '산부인과 전문의 12명',
+    nicuBeds: 'NICU병상 18개',
+    operatingRooms: '수술실 5개',
+    status: 'examine',
+    branch: '본원',
+    neonatologists: '7명',
+    anesthesiologists: '6명',
+    deliveryRooms: '6개',
+    incubators: '6개',
+    transfusionAvailable: false,
+  },
+  {
+    id: 'hospital-d',
+    name: 'A대학교병원',
+    distance: '18km',
+    travelTime: '차량 16분',
+    obstetricians: '산부인과 전문의 12명',
+    nicuBeds: 'NICU병상 18개',
+    operatingRooms: '수술실 5개',
+    status: 'conditional',
+    branch: '본원',
+    neonatologists: '7명',
+    anesthesiologists: '6명',
+    deliveryRooms: '6개',
+    incubators: '6개',
+    transfusionAvailable: true,
+  },
+]
+
+export const hospitalTypeOptions = [
+  '산부인과 의원',
+  '산부인과 병원',
+  '종합병원',
+  '상급종합병원',
+  '여성병원',
+  '모자의료센터',
+  '기타',
+] as const
+
+export const defaultHospitalAddForm: HospitalAddForm = {
+  name: '',
+  type: '',
+  address: '',
+  contact: '',
+  note: '',
+  obstetricians: '0',
+  neonatologists: '0',
+  anesthesiologists: '0',
+  operatingRooms: '0',
+  deliveryRooms: '0',
+  nicuBeds: '0',
+  incubators: '0',
+  transfusionAvailable: true,
+  emergencySurgeryAvailable: true,
+  availability: 'available',
+}
+
 export function getViewFromHash(hash: string): AppView {
   if (hash === '#update') {
     return 'update'
@@ -81,6 +188,26 @@ export function getViewFromHash(hash: string): AppView {
 
   if (hash === '#setting') {
     return 'setting'
+  }
+
+  if (hash === '#setting-alerts') {
+    return 'setting-alerts'
+  }
+
+  if (hash === '#setting-hospitals') {
+    return 'setting-hospitals'
+  }
+
+  if (hash === '#setting-hospital-add') {
+    return 'setting-hospital-add'
+  }
+
+  if (hash === '#setting-hospital-detail') {
+    return 'setting-hospital-detail'
+  }
+
+  if (hash === '#setting-profile-edit') {
+    return 'setting-profile-edit'
   }
 
   return 'map'
