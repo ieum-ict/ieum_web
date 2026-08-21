@@ -1,5 +1,5 @@
-import { TransportPage } from '../pages/transport-page'
+import { getRouteElement } from './routes'
 
 export default function App() {
-  return <TransportPage />
+  return getRouteElement(window.location.pathname)
 }
