@@ -5,6 +5,7 @@ import { InputMedicalInformation } from './InputMedicalInformation'
 
 type InputInformationProps = {
   onBack: () => void
+  onSave: () => void
 }
 
 type FetusType = 'single' | 'multiple'
@@ -94,7 +95,7 @@ function InputField({
   )
 }
 
-export function InputInformation({ onBack }: InputInformationProps) {
+export function InputInformation({ onBack, onSave }: InputInformationProps) {
   const [selectedFetusType, setSelectedFetusType] = useState<FetusType>('single')
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
 
@@ -115,7 +116,7 @@ export function InputInformation({ onBack }: InputInformationProps) {
   }
 
   if (currentStep === 2) {
-    return <InputMedicalInformation onBack={() => setCurrentStep(1)} />
+    return <InputMedicalInformation onBack={() => setCurrentStep(1)} onSave={onSave} />
   }
 
   return (

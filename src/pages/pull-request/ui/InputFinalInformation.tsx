@@ -1,22 +1,21 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../shared/config/assets'
-import { InputFinalInformation } from './InputFinalInformation'
 
-type InputMedicalInformationProps = {
+type InputFinalInformationProps = {
   onBack: () => void
   onSave: () => void
 }
 
-type BleedingLevel = 'none' | 'little' | 'many'
+type SeverityLevel = 'none' | 'little' | 'many'
 
-function MedicalInputField({
+function FinalInputField({
   label,
   unit,
   placeholder,
 }: {
   label: string
-  unit: string
+  unit?: string
   placeholder: string
 }) {
   const [inputValue, setInputValue] = useState('')
@@ -65,57 +64,80 @@ function MedicalInputField({
             outline: 'none',
           }}
         />
-        <strong
-          style={{
-            flex: '0 0 auto',
-            color: hasValue ? lightTheme.label.strong : lightTheme.label.assistive,
-            fontSize: '18px',
-            fontWeight: 600,
-            lineHeight: 1.3,
-          }}
-        >
-          {unit}
-        </strong>
+        {unit && (
+          <strong
+            style={{
+              flex: '0 0 auto',
+              color: hasValue ? lightTheme.label.strong : lightTheme.label.assistive,
+              fontSize: '18px',
+              fontWeight: 600,
+              lineHeight: 1.3,
+            }}
+          >
+            {unit}
+          </strong>
+        )}
       </div>
     </label>
   )
 }
 
-export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformationProps) {
-  const [selectedBleedingLevel, setSelectedBleedingLevel] = useState<BleedingLevel>('none')
-  const [isFinalStepOpen, setIsFinalStepOpen] = useState(false)
+export function InputFinalInformation({ onBack, onSave }: InputFinalInformationProps) {
+  const [painLevel, setPainLevel] = useState<SeverityLevel>('none')
+  const [amnioticFluidLeakLevel, setAmnioticFluidLeakLevel] = useState<SeverityLevel>('none')
 
-  const getBleedingButtonStyle = (level: BleedingLevel) => {
-    const isSelected = selectedBleedingLevel === level
+  const getSeverityButtonStyle = (isSelected: boolean) => ({
+    height: '42px',
+    border: `1px solid ${isSelected ? lightTheme.primary.normal : lightTheme.label.disable}`,
+    borderRadius: '100px',
+    color: isSelected ? lightTheme.primary.normal : lightTheme.label.assistive,
+    fontSize: '16px',
+    fontWeight: isSelected ? 500 : 400,
+    lineHeight: 1.3,
+    background: lightTheme.background.elevated.normal,
+    cursor: 'pointer',
+  })
 
-    return {
-      height: '42px',
-      border: `1px solid ${isSelected ? lightTheme.primary.normal : lightTheme.label.disable}`,
-      borderRadius: '100px',
-      color: isSelected ? lightTheme.primary.normal : lightTheme.label.assistive,
-      fontSize: '16px',
-      fontWeight: isSelected ? 500 : 400,
-      lineHeight: 1.3,
-      background: lightTheme.background.elevated.normal,
-      cursor: 'pointer',
-    }
-  }
-
-  if (isFinalStepOpen) {
-    return <InputFinalInformation onBack={() => setIsFinalStepOpen(false)} onSave={onSave} />
-  }
+  const renderSeverityOptions = (
+    selectedLevel: SeverityLevel,
+    onSelect: (level: SeverityLevel) => void,
+  ) => (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: '10px',
+      }}
+    >
+      {[
+        ['none', '없음'],
+        ['little', '조금'],
+        ['many', '많이'],
+      ].map(([level, label]) => (
+        <button
+          key={level}
+          type="button"
+          aria-pressed={selectedLevel === level}
+          onClick={() => onSelect(level as SeverityLevel)}
+          style={getSeverityButtonStyle(selectedLevel === level)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
 
   return (
     <main className="transport-page">
       <header className="update-header">
-        <button className="update-header__back" type="button" aria-label="이전 정보 입력으로 돌아가기" onClick={onBack}>
+        <button className="update-header__back" type="button" aria-label="이전 의료 정보 입력으로 돌아가기" onClick={onBack}>
           <img src={chevronIcon} alt="" draggable="false" />
         </button>
         <h1>정보 입력</h1>
       </header>
 
       <section
-        aria-label="전원 요청 의료 정보 입력"
+        aria-label="전원 요청 추가 정보 입력"
         style={{
           minHeight: 0,
           flex: '1 1 auto',
@@ -128,7 +150,7 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
       >
         <div style={{ display: 'grid', gap: '36px' }}>
           <div
-            aria-label="입력 단계 2 / 3"
+            aria-label="입력 단계 3 / 3"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -147,7 +169,7 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
             >
               <span style={{ height: '6px', borderRadius: '100px', background: lightTheme.primary.normal }} />
               <span style={{ height: '6px', borderRadius: '100px', background: lightTheme.primary.normal }} />
-              <span style={{ height: '6px', borderRadius: '100px', background: lightTheme.label.disable }} />
+              <span style={{ height: '6px', borderRadius: '100px', background: lightTheme.primary.normal }} />
             </div>
             <div
               style={{
@@ -159,16 +181,14 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
                 lineHeight: 1.3,
               }}
             >
-              <span style={{ color: lightTheme.primary.strong }}>2</span>
+              <span style={{ color: lightTheme.primary.strong }}>3</span>
               <span style={{ color: lightTheme.interaction.inactive }}>/</span>
               <span style={{ color: lightTheme.interaction.inactive }}>3</span>
             </div>
           </div>
 
           <div style={{ display: 'grid', gap: '26px' }}>
-            <MedicalInputField label="혈압" placeholder="혈압을 입력해주세요" unit="mmHg" />
-            <MedicalInputField label="맥박" placeholder="맥박을 입력해주세요" unit="bpm" />
-            <MedicalInputField label="산소포화도" placeholder="산소포화도를 입력해주세요" unit="%" />
+            <FinalInputField label="출발 의료기관" placeholder="출발 의료기관을 입력해주세요" />
 
             <div style={{ display: 'grid', gap: '12px' }}>
               <span
@@ -180,47 +200,33 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
                   lineHeight: 1.3,
                 }}
               >
-                출혈
+                진통
               </span>
-              <div
+              {renderSeverityOptions(painLevel, setPainLevel)}
+            </div>
+
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <span
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                  gap: '10px',
+                  paddingLeft: '13px',
+                  color: lightTheme.label.alternative,
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  lineHeight: 1.3,
                 }}
               >
-                <button
-                  type="button"
-                  aria-pressed={selectedBleedingLevel === 'none'}
-                  onClick={() => setSelectedBleedingLevel('none')}
-                  style={getBleedingButtonStyle('none')}
-                >
-                  없음
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={selectedBleedingLevel === 'little'}
-                  onClick={() => setSelectedBleedingLevel('little')}
-                  style={getBleedingButtonStyle('little')}
-                >
-                  조금
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={selectedBleedingLevel === 'many'}
-                  onClick={() => setSelectedBleedingLevel('many')}
-                  style={getBleedingButtonStyle('many')}
-                >
-                  많이
-                </button>
-              </div>
+                양수 파수
+              </span>
+              {renderSeverityOptions(amnioticFluidLeakLevel, setAmnioticFluidLeakLevel)}
             </div>
+
+            <FinalInputField label="태아 심박수" placeholder="태아 심박수를 입력해주세요" unit="bpm" />
           </div>
         </div>
 
         <button
           type="button"
-          onClick={() => setIsFinalStepOpen(true)}
+          onClick={onSave}
           style={{
             width: '100%',
             height: '42px',
@@ -234,7 +240,7 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
             cursor: 'pointer',
           }}
         >
-          다음
+          저장
         </button>
       </section>
     </main>

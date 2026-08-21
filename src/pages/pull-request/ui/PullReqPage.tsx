@@ -91,10 +91,18 @@ export const PullReqPage = () => {
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
 
+  const closeInputForm = () => {
+    if (window.location.pathname !== '/pull-request') {
+      window.history.replaceState(null, '', '/pull-request')
+    }
+
+    setIsInputOpen(false)
+  }
+
   if (isInputOpen) {
     return (
       <div style={createThemeVars()}>
-        <InputInformation onBack={() => setIsInputOpen(false)} />
+        <InputInformation onBack={() => setIsInputOpen(false)} onSave={closeInputForm} />
       </div>
     )
   }
