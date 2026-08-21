@@ -83,6 +83,14 @@ function createSheetHandlers(
   return { onPointerDown, onPointerMove, onPointerUp }
 }
 
+function getViewFromNavigationTab(tab: NavigationTab): AppView {
+  if (tab === 'transfer') {
+    return 'map'
+  }
+
+  return tab
+}
+
 export function useTransportPage() {
   const mapRef = useRef<HTMLDivElement | null>(null)
   const dragRef = useRef<DragState | null>(null)
@@ -376,14 +384,16 @@ export function useTransportPage() {
   }
 
   const openNavigationTab = (tab: NavigationTab) => {
-    if (tab === 'transfer') {
+    const nextView = getViewFromNavigationTab(tab)
+
+    if (nextView === 'map') {
       setCurrentView('map')
       window.location.hash = ''
       return
     }
 
-    setCurrentView(tab)
-    window.location.hash = tab
+    setCurrentView(nextView)
+    window.location.hash = nextView
   }
 
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)

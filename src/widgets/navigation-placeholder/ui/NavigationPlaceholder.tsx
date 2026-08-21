@@ -1,11 +1,12 @@
 import { BottomNavigation, type NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
+import type { NavigationView } from '../../../entities/transport/model/types'
 
 type NavigationPlaceholderProps = {
-  activeTab: Exclude<NavigationTab, 'transfer'>
+  activeTab: NavigationView
   onTabChange: (tab: NavigationTab) => void
 }
 
-const titles: Record<Exclude<NavigationTab, 'transfer'>, string> = {
+const titles: Record<NavigationView, string> = {
   request: '요청 페이지',
   hospital: '병원 페이지',
   setting: '설정 페이지',
