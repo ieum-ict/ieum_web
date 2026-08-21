@@ -1,10 +1,12 @@
 import { noTransferEmojiIcon } from '../../../shared/config/assets'
+import { BottomNavigation, type NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
 
 type EmptyTransportStateProps = {
   onPrimaryAction: () => void
+  onTabChange: (tab: NavigationTab) => void
 }
 
-export function EmptyTransportState({ onPrimaryAction }: EmptyTransportStateProps) {
+export function EmptyTransportState({ onPrimaryAction, onTabChange }: EmptyTransportStateProps) {
   return (
     <main className="empty-transport-page">
       <section className="empty-transport-page__content" aria-label="진행 중인 이송 없음">
@@ -24,6 +26,7 @@ export function EmptyTransportState({ onPrimaryAction }: EmptyTransportStateProp
           진행 중인 전원 요청 보기
         </button>
       </section>
+      <BottomNavigation activeTab="transfer" onTabChange={onTabChange} />
     </main>
   )
 }
