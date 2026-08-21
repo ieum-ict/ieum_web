@@ -31,7 +31,6 @@ import type {
   UpdateFormData,
 } from '../../../entities/transport/model/types'
 import { clamp, pointsToPath, project, TILE_SIZE, unproject } from '../../../shared/lib/map'
-import type { NavigationTab } from '../../../widgets/bottom-navigation/ui/BottomNavigation'
 
 function createSheetHandlers(
   sheetRef: MutableRefObject<SheetDragState | null>,
@@ -81,14 +80,6 @@ function createSheetHandlers(
   }
 
   return { onPointerDown, onPointerMove, onPointerUp }
-}
-
-function getViewFromNavigationTab(tab: NavigationTab): AppView {
-  if (tab === 'transfer') {
-    return 'map'
-  }
-
-  return tab
 }
 
 export function useTransportPage() {
@@ -383,19 +374,6 @@ export function useTransportPage() {
     window.location.hash = ''
   }
 
-  const openNavigationTab = (tab: NavigationTab) => {
-    const nextView = getViewFromNavigationTab(tab)
-
-    if (nextView === 'map') {
-      setCurrentView('map')
-      window.location.hash = ''
-      return
-    }
-
-    setCurrentView(nextView)
-    window.location.hash = nextView
-  }
-
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)
   const hospitalSheetHandlers = createSheetHandlers(
     hospitalSheetDragRef,
@@ -485,6 +463,5 @@ export function useTransportPage() {
     submitUpdateForm,
     closeUpdateView,
     openRequestsFallback,
-    openNavigationTab,
   }
 }

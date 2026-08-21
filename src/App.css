@@ -1,3 +1,33 @@
+.app-shell {
+  width: min(100vw, 402px);
+  height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--label-normal);
+  background: var(--background-normal);
+}
+
+.app-shell__content {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.app-shell__content > div,
+.app-shell__content > main {
+  height: 100%;
+  min-height: 0;
+}
+
+.app-shell__content .transport-page,
+.app-shell__content .empty-transport-page {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
 .transport-page {
   width: min(100vw, 402px);
   min-height: 100vh;

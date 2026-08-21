@@ -18,7 +18,6 @@ export function TransportPage() {
           onSubmit={transportPage.submitUpdateForm}
           onFieldChange={transportPage.handleUpdateFieldChange}
           onSeverityChange={transportPage.handleSeverityChange}
-          onTabChange={transportPage.openNavigationTab}
         />
       </div>
     )
@@ -27,10 +26,7 @@ export function TransportPage() {
   if (transportPage.currentView === 'empty' || !transportPage.hasActiveTransfer) {
     return (
       <div style={createThemeVars()}>
-        <EmptyTransportState
-          onPrimaryAction={transportPage.openRequestsFallback}
-          onTabChange={transportPage.openNavigationTab}
-        />
+        <EmptyTransportState onPrimaryAction={transportPage.openRequestsFallback} />
       </div>
     )
   }
@@ -42,10 +38,7 @@ export function TransportPage() {
   ) {
     return (
       <div style={createThemeVars()}>
-        <NavigationPlaceholder
-          activeTab={transportPage.currentView}
-          onTabChange={transportPage.openNavigationTab}
-        />
+        <NavigationPlaceholder activeTab={transportPage.currentView} />
       </div>
     )
   }
@@ -96,7 +89,6 @@ export function TransportPage() {
         onTransportSheetPointerUp={transportPage.transportSheetHandlers.onPointerUp}
         onOpenUpdateView={transportPage.openUpdateView}
         onMarkTransferCompleted={transportPage.markTransferAsCompleted}
-        onTabChange={transportPage.openNavigationTab}
       />
     </div>
   )
