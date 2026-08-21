@@ -6,8 +6,7 @@ import {
   settingsDropdownIcon,
   settingsInformationIcon,
   settingsPlusIcon,
-  settingsProfileBodyIcon,
-  settingsProfileHeadIcon,
+  settingsProfileIcon,
 } from '../../../shared/config/assets'
 import { hospitalTypeOptions } from '../../../entities/transport/model/constants'
 import type {
@@ -55,18 +54,7 @@ type ProfileEditPageProps = SharedProps
 type HospitalDetailPageProps = SharedProps & {
   item: HospitalManagementItem
   onClose: () => void
-  onSave: () => void
-}
-
-function SettingsSubHeader({ title, onBack }: { title: string; onBack: () => void }) {
-  return (
-    <header className="settings-subpage__header">
-      <button className="settings-subpage__back" type="button" onClick={onBack} aria-label={`${title} 뒤로가기`}>
-        <img src={chevronIcon} alt="" draggable="false" />
-      </button>
-      <h1>{title}</h1>
-    </header>
-  )
+  onSave: (item: HospitalManagementItem) => void
 }
 
 function SettingsShell({
@@ -74,10 +62,16 @@ function SettingsShell({
   onBack,
   onTabChange,
   children,
-}: SharedProps & { title: string; children: ReactNode }) {
+  headerClassName,
+}: SharedProps & { title: string; children: ReactNode; headerClassName?: string }) {
   return (
     <main className="settings-subpage">
-      <SettingsSubHeader title={title} onBack={onBack} />
+      <header className={`settings-subpage__header${headerClassName ? ` ${headerClassName}` : ''}`}>
+        <button className="settings-subpage__back" type="button" onClick={onBack} aria-label={`${title} 뒤로가기`}>
+          <img src={chevronIcon} alt="" draggable="false" />
+        </button>
+        <h1>{title}</h1>
+      </header>
       <section className="settings-subpage__content">{children}</section>
       <BottomNavigation activeTab="setting" onTabChange={onTabChange} />
     </main>

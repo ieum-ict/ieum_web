@@ -576,6 +576,14 @@ export function useTransportPage() {
     openSettingsView('setting-profile-edit')
   }
 
+  const saveHospitalDetail = (nextItem: HospitalManagementItem) => {
+    setHospitalItems((currentValue) =>
+      currentValue.map((item) => (item.id === nextItem.id ? nextItem : item)),
+    )
+    setSelectedHospitalItem(nextItem)
+    closeHospitalDetail()
+  }
+
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)
   const hospitalSheetHandlers = createSheetHandlers(
     hospitalSheetDragRef,
@@ -690,6 +698,7 @@ export function useTransportPage() {
     goToNextHospitalAddStep,
     submitHospitalAdd,
     openProfileEdit,
+    saveHospitalDetail,
     returnToSettingsHome,
   }
 }

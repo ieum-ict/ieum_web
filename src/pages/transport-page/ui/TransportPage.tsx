@@ -81,7 +81,7 @@ export function TransportPage() {
           item={transportPage.selectedHospitalItem}
           onBack={transportPage.closeHospitalDetail}
           onClose={transportPage.closeHospitalDetail}
-          onSave={transportPage.closeHospitalDetail}
+          onSave={transportPage.saveHospitalDetail}
           onTabChange={transportPage.openNavigationTab}
         />
       </div>
