@@ -11,14 +11,15 @@ export type PullReqCardProps = {
   isNewborn?: boolean
   location: string
   requestedMinutesAgo: number
+  onClick?: () => void
 }
 
-const statusColors: Record<PullReqCardProps['status'], string> = {
+const statusColors = {
   진행중: lightTheme.primary.normal,
   대기중: lightTheme.primary.normal,
   응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
-}
+} satisfies Record<PullReqStatus, string>
 
 export const PullReqCard = ({
   title,
@@ -29,17 +30,24 @@ export const PullReqCard = ({
   isNewborn = false,
   location,
   requestedMinutesAgo,
+  onClick,
 }: PullReqCardProps) => {
   const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
   const description = `${conditionText} · ${symptoms.join(', ')}`
 
   return (
-    <article
+    <button
+      type="button"
+      onClick={onClick}
       style={{
+        width: '100%',
         padding: '18px',
+        border: 0,
         borderRadius: '8px',
+        textAlign: 'left',
         background: 'var(--background-elevated)',
         boxShadow: '0 8px 24px rgb(0 0 0 / 8%)',
+        cursor: onClick ? 'pointer' : 'default',
       }}
     >
       <div
@@ -119,6 +127,6 @@ export const PullReqCard = ({
           요청 {requestedMinutesAgo}분전
         </p>
       </div>
-    </article>
+    </button>
   )
 }

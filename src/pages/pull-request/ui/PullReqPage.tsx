@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
+import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
+import { InputInformation } from './input-info/InputInformation'
 import { PullReqCard } from './PullReqCard'
+import { PullReqDetailPage } from './PullReqDetailPage'
 import type { PullReqStatus } from './PullReqCard'
 
 type PullReqFilter = '전체' | PullReqStatus
@@ -86,12 +89,45 @@ const pullReqItems: PullReqItem[] = [
 
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
+  const [isInputOpen, setIsInputOpen] = useState(false)
+  const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqItem | null>(null)
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
 
+  const closeInputForm = () => {
+    if (window.location.pathname !== '/pull-request') {
+      window.history.replaceState(null, '', '/pull-request')
+    }
+
+    setIsInputOpen(false)
+  }
+
+  if (isInputOpen) {
+    return (
+      <div style={createThemeVars()}>
+        <InputInformation onBack={() => setIsInputOpen(false)} onSave={closeInputForm} />
+      </div>
+    )
+  }
+
+  if (selectedPullReqItem) {
+    return (
+      <div style={createThemeVars()}>
+        <PullReqDetailPage
+          title={selectedPullReqItem.title}
+          status={selectedPullReqItem.status}
+          week={selectedPullReqItem.week}
+          day={selectedPullReqItem.day}
+          symptoms={selectedPullReqItem.symptoms}
+          isNewborn={selectedPullReqItem.isNewborn}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={createThemeVars()}>
-      <main className="transport-page">
+      <main className="transport-page" style={{ position: 'relative' }}>
         <div
           style={{
             display: 'flex',
@@ -186,10 +222,52 @@ export const PullReqPage = () => {
                 isNewborn={item.isNewborn}
                 location={item.location}
                 requestedMinutesAgo={item.requestedMinutesAgo}
+                onClick={() => setSelectedPullReqItem(item)}
               />
             ))}
           </div>
         </section>
+
+        <button
+          type="button"
+          aria-label="전원 요청 정보 입력"
+          onClick={() => setIsInputOpen(true)}
+          style={{
+            position: 'absolute',
+            right: '20px',
+            bottom: '20px',
+            zIndex: 2,
+            width: '58px',
+            height: '58px',
+            padding: 0,
+            border: 0,
+            borderRadius: '100px',
+            display: 'grid',
+            placeItems: 'center',
+            background: lightTheme.primary.normal,
+            boxShadow: '0 2px 4px rgb(0 0 0 / 25%)',
+            cursor: 'pointer',
+          }}
+        >
+          <span
+            style={{
+              width: '44px',
+              height: '44px',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <img
+              src={plusIcon}
+              alt=""
+              draggable="false"
+              style={{
+                width: '25.67px',
+                height: '25.67px',
+              }}
+            />
+          </span>
+        </button>
       </main>
     </div>
   )

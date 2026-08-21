@@ -8,6 +8,7 @@ export function createThemeVars(): CSSProperties {
     '--label-normal': lightTheme.label.normal,
     '--label-neutral': lightTheme.label.neutral,
     '--label-alternative': lightTheme.label.alternative,
+    '--label-assistive': lightTheme.label.assistive,
     '--background-normal': lightTheme.background.normal.normal,
     '--background-elevated': lightTheme.background.elevated.normal,
     '--fill-alternative': lightTheme.fill.alternative,

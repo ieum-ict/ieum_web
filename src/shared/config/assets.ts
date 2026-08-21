@@ -9,6 +9,7 @@ export const panelCarIcon = new URL('../../assets/transport/panel-car.svg', impo
 export const clapIcon = new URL('../../assets/transport/clap.svg', import.meta.url).href
 export const checkBoxFillIcon = new URL('../../assets/transport/check-box-fill.svg', import.meta.url).href
 export const checkBoxIcon = new URL('../../assets/transport/check-box.svg', import.meta.url).href
+export const plusIcon = new URL('../../assets/transport/plus.svg', import.meta.url).href
 export const noTransferEmojiIcon = 'https://www.figma.com/api/mcp/asset/11644d14-98a3-45b6-95f9-aa05ed4aa78f.svg'
 export const navReportIcon = new URL('../../assets/transport/nav-report.svg', import.meta.url).href
 export const navReportFillIcon = new URL('../../assets/transport/nav-report-fill.svg', import.meta.url).href
