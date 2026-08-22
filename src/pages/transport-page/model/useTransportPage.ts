@@ -13,7 +13,6 @@ import {
   defaultHospitalAddForm,
   defaultUpdateForm,
   fallbackRouteCoordinates,
-  getViewFromHash,
   hospitalManagementItems,
   initialCenter,
   MAX_ZOOM,
@@ -54,6 +53,10 @@ function normalizeHospitalAddForm(form: HospitalAddForm): HospitalAddForm {
     nicuBeds: normalizeCount(form.nicuBeds),
     incubators: normalizeCount(form.incubators),
   }
+}
+
+function getTransportViewFromHash(hash: string): AppView {
+  return hash === '#update' ? 'update' : 'map'
 }
 
 function createSheetHandlers(
@@ -126,7 +129,7 @@ export function useTransportPage() {
   const [hospitalSheetDragOffset, setHospitalSheetDragOffset] = useState(0)
   const [contactSheetDragOffset, setContactSheetDragOffset] = useState(0)
   const [routeCoordinates, setRouteCoordinates] = useState<Coordinate[]>(fallbackRouteCoordinates)
-  const [currentView, setCurrentView] = useState<AppView>(() => getViewFromHash(window.location.hash))
+  const [currentView, setCurrentView] = useState<AppView>(() => getTransportViewFromHash(window.location.hash))
   const [savedUpdateForm, setSavedUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [draftUpdateForm, setDraftUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [lastUpdatedAt, setLastUpdatedAt] = useState('12:24')
@@ -194,19 +197,8 @@ export function useTransportPage() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      const nextView = getViewFromHash(window.location.hash)
+      const nextView = getTransportViewFromHash(window.location.hash)
       setCurrentView(nextView)
-
-      if (
-        nextView === 'setting' ||
-        nextView === 'setting-alerts' ||
-        nextView === 'setting-hospitals' ||
-        nextView === 'setting-hospital-add' ||
-        nextView === 'setting-hospital-detail' ||
-        nextView === 'setting-profile-edit'
-      ) {
-        setCurrentSettingsView(nextView)
-      }
     }
 
     window.addEventListener('hashchange', handleHashChange)

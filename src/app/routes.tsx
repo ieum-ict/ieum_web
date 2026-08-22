@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { PullReqPage } from '../pages/pull-request/ui/PullReqPage'
+import { SettingsRoutePage } from '../pages/settings-page/ui/SettingsRoutePage'
 import { TransportPage } from '../pages/transport-page'
 import type { NavigationTab } from '../widgets/bottom-navigation/ui/BottomNavigation'
 
@@ -34,7 +35,7 @@ export const routes: AppRoute[] = [
   },
   {
     path: '/setting',
-    element: <div />,
+    element: <SettingsRoutePage />,
   },
 ]
 

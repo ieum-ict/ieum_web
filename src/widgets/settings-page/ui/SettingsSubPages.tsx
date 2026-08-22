@@ -16,10 +16,8 @@ import type {
   HospitalType,
   NotificationSettingItem,
 } from '../../../entities/transport/model/types'
-import { BottomNavigation, type NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
 
 type SharedProps = {
-  onTabChange: (tab: NavigationTab) => void
   onBack: () => void
 }
 
@@ -60,7 +58,6 @@ type HospitalDetailPageProps = SharedProps & {
 function SettingsShell({
   title,
   onBack,
-  onTabChange,
   children,
   headerClassName,
 }: SharedProps & { title: string; children: ReactNode; headerClassName?: string }) {
@@ -73,7 +70,6 @@ function SettingsShell({
         <h1>{title}</h1>
       </header>
       <section className="settings-subpage__content">{children}</section>
-      <BottomNavigation activeTab="setting" onTabChange={onTabChange} />
     </main>
   )
 }
@@ -183,10 +179,9 @@ export function AlertSettingsPage({
   onCancel,
   onSave,
   onBack,
-  onTabChange,
 }: AlertSettingsPageProps) {
   return (
-    <SettingsShell title="알림 설정" onBack={onBack} onTabChange={onTabChange}>
+    <SettingsShell title="알림 설정" onBack={onBack}>
       <div className="alert-settings-page">
         <div className="alert-settings-page__list">
           {items.map((item) => (
@@ -234,10 +229,9 @@ export function HospitalManagementPage({
   onAddHospital,
   onOpenHospitalDetail,
   onBack,
-  onTabChange,
 }: HospitalManagementPageProps) {
   return (
-    <SettingsShell title="병원 정보 관리" onBack={onBack} onTabChange={onTabChange}>
+    <SettingsShell title="병원 정보 관리" onBack={onBack}>
       <div className="hospital-management-page">
         <div className="hospital-management-page__title">
           <strong>등록 병원</strong>
@@ -333,7 +327,6 @@ export function HospitalDetailPage({
   onBack,
   onClose,
   onSave,
-  onTabChange,
 }: HospitalDetailPageProps) {
   const [draftItem, setDraftItem] = useState(item)
 
@@ -371,7 +364,7 @@ export function HospitalDetailPage({
     }
 
   return (
-    <SettingsShell title="자원 상세" onBack={onBack} onTabChange={onTabChange} headerClassName="hospital-detail-page__header">
+    <SettingsShell title="자원 상세" onBack={onBack} headerClassName="hospital-detail-page__header">
       <div className="hospital-detail-page">
         <div className="hospital-detail-page__content">
           <div className="hospital-detail-page__summary">
@@ -488,12 +481,11 @@ export function HospitalAddPage({
   onBooleanChange,
   onAvailabilityChange,
   onBack,
-  onTabChange,
 }: HospitalAddPageProps) {
   const isStepOneValid = form.name.trim() !== '' && form.address.trim() !== '' && form.contact.trim() !== ''
 
   return (
-    <SettingsShell title="병원 추가" onBack={onBack} onTabChange={onTabChange}>
+    <SettingsShell title="병원 추가" onBack={onBack}>
       <div className="hospital-add-page">
         <StepProgress step={step} />
 
@@ -644,7 +636,7 @@ export function HospitalAddPage({
   )
 }
 
-export function ProfileEditPage({ onBack, onTabChange }: ProfileEditPageProps) {
+export function ProfileEditPage({ onBack }: ProfileEditPageProps) {
   const inputId = useId()
   const initialProfileForm = {
     name: '김지현',
@@ -731,7 +723,7 @@ export function ProfileEditPage({ onBack, onTabChange }: ProfileEditPageProps) {
   }
 
   return (
-    <SettingsShell title="회원정보 수정" onBack={onBack} onTabChange={onTabChange}>
+    <SettingsShell title="회원정보 수정" onBack={onBack}>
       <div className="profile-edit-page">
         <div className="profile-edit-page__avatar-wrap">
           <input

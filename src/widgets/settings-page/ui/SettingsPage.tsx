@@ -5,10 +5,8 @@ import {
   settingsProfileEditIcon,
   settingsProfileIcon,
 } from '../../../shared/config/assets'
-import { BottomNavigation, type NavigationTab } from '../../bottom-navigation/ui/BottomNavigation'
 
 type SettingsPageProps = {
-  onTabChange: (tab: NavigationTab) => void
   onOpenAlerts: () => void
   onOpenHospitalManagement: () => void
   onOpenProfileEdit: () => void
@@ -21,7 +19,6 @@ const settingItems = [
 ] as const
 
 export function SettingsPage({
-  onTabChange,
   onOpenAlerts,
   onOpenHospitalManagement,
   onOpenProfileEdit,
@@ -90,8 +87,6 @@ export function SettingsPage({
           </div>
         </section>
       </section>
-
-      <BottomNavigation activeTab="setting" onTabChange={onTabChange} />
     </main>
   )
 }
