@@ -10,11 +10,15 @@ import type {
 import {
   ambulanceLocation,
   createOsrmRouteUrl,
+  defaultHospitalAddForm,
   defaultUpdateForm,
   fallbackRouteCoordinates,
+  getViewFromHash,
+  hospitalManagementItems,
   initialCenter,
   MAX_ZOOM,
   MIN_ZOOM,
+  notificationSettings,
   transferDestination,
   transferStart,
 } from '../../../entities/transport/model/constants'
@@ -22,6 +26,11 @@ import type {
   AppView,
   Coordinate,
   DragState,
+  HospitalAcceptance,
+  HospitalAddForm,
+  HospitalManagementItem,
+  HospitalType,
+  NotificationSettingItem,
   OsrmRouteResponse,
   ScreenPoint,
   Severity,
@@ -30,6 +39,22 @@ import type {
   UpdateFormData,
 } from '../../../entities/transport/model/types'
 import { clamp, pointsToPath, project, TILE_SIZE, unproject } from '../../../shared/lib/map'
+import type { NavigationTab } from '../../../widgets/bottom-navigation/ui/BottomNavigation'
+
+function normalizeHospitalAddForm(form: HospitalAddForm): HospitalAddForm {
+  const normalizeCount = (value: string) => (value === '32' ? '0' : value)
+
+  return {
+    ...form,
+    obstetricians: normalizeCount(form.obstetricians),
+    neonatologists: normalizeCount(form.neonatologists),
+    anesthesiologists: normalizeCount(form.anesthesiologists),
+    operatingRooms: normalizeCount(form.operatingRooms),
+    deliveryRooms: normalizeCount(form.deliveryRooms),
+    nicuBeds: normalizeCount(form.nicuBeds),
+    incubators: normalizeCount(form.incubators),
+  }
+}
 
 function createSheetHandlers(
   sheetRef: MutableRefObject<SheetDragState | null>,
@@ -101,10 +126,24 @@ export function useTransportPage() {
   const [hospitalSheetDragOffset, setHospitalSheetDragOffset] = useState(0)
   const [contactSheetDragOffset, setContactSheetDragOffset] = useState(0)
   const [routeCoordinates, setRouteCoordinates] = useState<Coordinate[]>(fallbackRouteCoordinates)
-  const [currentView, setCurrentView] = useState<AppView>('map')
+  const [currentView, setCurrentView] = useState<AppView>(() => getViewFromHash(window.location.hash))
   const [savedUpdateForm, setSavedUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [draftUpdateForm, setDraftUpdateForm] = useState<UpdateFormData>(defaultUpdateForm)
   const [lastUpdatedAt, setLastUpdatedAt] = useState('12:24')
+  const [currentSettingsView, setCurrentSettingsView] = useState<AppView>('setting')
+  const [draftNotificationSettings, setDraftNotificationSettings] =
+    useState<NotificationSettingItem[]>(notificationSettings)
+  const [savedNotificationSettings, setSavedNotificationSettings] =
+    useState<NotificationSettingItem[]>(notificationSettings)
+  const [hospitalItems, setHospitalItems] = useState<HospitalManagementItem[]>(hospitalManagementItems)
+  const [selectedHospitalItem, setSelectedHospitalItem] = useState<HospitalManagementItem | null>(
+    hospitalManagementItems[0] ?? null,
+  )
+  const [hospitalAddStep, setHospitalAddStep] = useState(1)
+  const [isHospitalTypeOpen, setIsHospitalTypeOpen] = useState(false)
+  const [draftHospitalAddForm, setDraftHospitalAddForm] = useState<HospitalAddForm>(() =>
+    normalizeHospitalAddForm(defaultHospitalAddForm),
+  )
 
   useEffect(() => {
     const mapElement = mapRef.current
@@ -151,6 +190,31 @@ export function useTransportPage() {
 
     void loadRoadRoute()
     return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const nextView = getViewFromHash(window.location.hash)
+      setCurrentView(nextView)
+
+      if (
+        nextView === 'setting' ||
+        nextView === 'setting-alerts' ||
+        nextView === 'setting-hospitals' ||
+        nextView === 'setting-hospital-add' ||
+        nextView === 'setting-hospital-detail' ||
+        nextView === 'setting-profile-edit'
+      ) {
+        setCurrentSettingsView(nextView)
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  useEffect(() => {
+    setDraftHospitalAddForm((currentValue) => normalizeHospitalAddForm(currentValue))
   }, [])
 
   const projectedCenter = useMemo(() => project(center, zoom), [center, zoom])
@@ -351,15 +415,173 @@ export function useTransportPage() {
     closeTransportSheet()
     setDraftUpdateForm(savedUpdateForm)
     setCurrentView('update')
+    window.location.hash = 'update'
   }
 
   const closeUpdateView = () => {
-    setCurrentView('map')
+    window.location.hash = ''
   }
 
   const openRequestsFallback = () => {
     setHasActiveTransfer(true)
     setCurrentView('map')
+    window.location.hash = ''
+  }
+
+  const openNavigationTab = (tab: NavigationTab) => {
+    if (tab === 'transfer') {
+      setCurrentView('map')
+      window.location.hash = ''
+      return
+    }
+
+    setCurrentView(tab)
+    window.location.hash = tab
+  }
+
+  const openSettingsView = (view: AppView) => {
+    setCurrentSettingsView(view)
+    setCurrentView(view)
+    window.location.hash = view
+  }
+
+  const returnToSettingsHome = () => {
+    openSettingsView('setting')
+  }
+
+  const openSettingsAlerts = () => {
+    setDraftNotificationSettings(savedNotificationSettings)
+    openSettingsView('setting-alerts')
+  }
+
+  const toggleNotificationSetting = (id: string) => {
+    setDraftNotificationSettings((currentValue) =>
+      currentValue.map((item) => (item.id === id ? { ...item, enabled: !item.enabled } : item)),
+    )
+  }
+
+  const saveNotificationSettings = () => {
+    setSavedNotificationSettings(draftNotificationSettings)
+    returnToSettingsHome()
+  }
+
+  const cancelNotificationSettings = () => {
+    setDraftNotificationSettings(savedNotificationSettings)
+    returnToSettingsHome()
+  }
+
+  const openHospitalManagement = () => {
+    openSettingsView('setting-hospitals')
+  }
+
+  const openHospitalAdd = () => {
+    setDraftHospitalAddForm(normalizeHospitalAddForm(defaultHospitalAddForm))
+    setHospitalAddStep(1)
+    setIsHospitalTypeOpen(false)
+    openSettingsView('setting-hospital-add')
+  }
+
+  const closeHospitalAdd = () => {
+    setHospitalAddStep(1)
+    setIsHospitalTypeOpen(false)
+    openHospitalManagement()
+  }
+
+  const openHospitalDetail = (hospitalId: string) => {
+    const nextHospital = hospitalItems.find((item) => item.id === hospitalId)
+    if (!nextHospital) {
+      return
+    }
+
+    setSelectedHospitalItem(nextHospital)
+    openSettingsView('setting-hospital-detail')
+  }
+
+  const closeHospitalDetail = () => {
+    openHospitalManagement()
+  }
+
+  const handleHospitalAddFieldChange = (field: keyof HospitalAddForm, value: string) => {
+    setDraftHospitalAddForm((currentValue) => ({
+      ...currentValue,
+      [field]: value,
+    }))
+  }
+
+  const selectHospitalType = (value: HospitalType) => {
+    setDraftHospitalAddForm((currentValue) => ({
+      ...currentValue,
+      type: value,
+    }))
+    setIsHospitalTypeOpen(false)
+  }
+
+  const toggleHospitalTypeDropdown = () => {
+    setIsHospitalTypeOpen((currentValue) => !currentValue)
+  }
+
+  const setHospitalAddBoolean = (
+    field: 'transfusionAvailable' | 'emergencySurgeryAvailable',
+    value: boolean,
+  ) => {
+    setDraftHospitalAddForm((currentValue) => ({
+      ...currentValue,
+      [field]: value,
+    }))
+  }
+
+  const setHospitalAvailability = (value: HospitalAddForm['availability']) => {
+    setDraftHospitalAddForm((currentValue) => ({
+      ...currentValue,
+      availability: value,
+    }))
+  }
+
+  const goToNextHospitalAddStep = () => {
+    setHospitalAddStep((currentValue) => Math.min(3, currentValue + 1))
+    setIsHospitalTypeOpen(false)
+  }
+
+  const submitHospitalAdd = () => {
+    const statusMap: Record<HospitalAddForm['availability'], HospitalAcceptance> = {
+      available: 'available',
+      conditional: 'conditional',
+      unavailable: 'examine',
+    }
+
+    setHospitalItems((currentValue) => [
+      {
+        id: `hospital-${Date.now()}`,
+        name: draftHospitalAddForm.name || '새 병원',
+        distance: '18km',
+        travelTime: '차량 16분',
+        obstetricians: `산부인과 전문의 ${draftHospitalAddForm.obstetricians || '0'}명`,
+        nicuBeds: `NICU병상 ${draftHospitalAddForm.nicuBeds || '0'}개`,
+        operatingRooms: `수술실 ${draftHospitalAddForm.operatingRooms || '0'}개`,
+        status: statusMap[draftHospitalAddForm.availability],
+        branch: '본원',
+        neonatologists: `${draftHospitalAddForm.neonatologists || '0'}명`,
+        anesthesiologists: `${draftHospitalAddForm.anesthesiologists || '0'}명`,
+        deliveryRooms: `${draftHospitalAddForm.deliveryRooms || '0'}개`,
+        incubators: `${draftHospitalAddForm.incubators || '0'}개`,
+        transfusionAvailable: draftHospitalAddForm.transfusionAvailable,
+      } satisfies HospitalManagementItem,
+      ...currentValue,
+    ])
+
+    closeHospitalAdd()
+  }
+
+  const openProfileEdit = () => {
+    openSettingsView('setting-profile-edit')
+  }
+
+  const saveHospitalDetail = (nextItem: HospitalManagementItem) => {
+    setHospitalItems((currentValue) =>
+      currentValue.map((item) => (item.id === nextItem.id ? nextItem : item)),
+    )
+    setSelectedHospitalItem(nextItem)
+    closeHospitalDetail()
   }
 
   const transportSheetHandlers = createSheetHandlers(sheetDragRef, setSheetDragOffset, closeTransportSheet, 80)
@@ -451,5 +673,32 @@ export function useTransportPage() {
     submitUpdateForm,
     closeUpdateView,
     openRequestsFallback,
+    openNavigationTab,
+    currentSettingsView,
+    draftNotificationSettings,
+    hospitalItems,
+    selectedHospitalItem,
+    hospitalAddStep,
+    isHospitalTypeOpen,
+    draftHospitalAddForm,
+    openSettingsAlerts,
+    toggleNotificationSetting,
+    saveNotificationSettings,
+    cancelNotificationSettings,
+    openHospitalManagement,
+    openHospitalAdd,
+    closeHospitalAdd,
+    openHospitalDetail,
+    closeHospitalDetail,
+    handleHospitalAddFieldChange,
+    selectHospitalType,
+    toggleHospitalTypeDropdown,
+    setHospitalAddBoolean,
+    setHospitalAvailability,
+    goToNextHospitalAddStep,
+    submitHospitalAdd,
+    openProfileEdit,
+    saveHospitalDetail,
+    returnToSettingsHome,
   }
 }

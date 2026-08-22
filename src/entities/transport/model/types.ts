@@ -23,7 +23,17 @@ export type OsrmRouteResponse = {
 }
 
 export type NavigationView = 'request' | 'hospital' | 'setting'
-export type AppView = 'map' | 'update' | 'empty'
+
+export type AppView =
+  | 'map'
+  | 'update'
+  | 'empty'
+  | NavigationView
+  | 'setting-alerts'
+  | 'setting-hospitals'
+  | 'setting-hospital-add'
+  | 'setting-hospital-detail'
+  | 'setting-profile-edit'
 export type Severity = 'none' | 'light' | 'heavy'
 export type SeverityField = 'pain' | 'bleeding' | 'amnioticFluidLeak'
 
@@ -47,4 +57,57 @@ export type HospitalStep = {
 export type HandoverChecklistItem = {
   label: string
   checked: boolean
+}
+
+export type NotificationSettingItem = {
+  id: string
+  title: string
+  description: string
+  enabled: boolean
+}
+
+export type HospitalAcceptance = 'available' | 'conditional' | 'examine'
+
+export type HospitalManagementItem = {
+  id: string
+  name: string
+  distance: string
+  travelTime: string
+  obstetricians: string
+  nicuBeds: string
+  operatingRooms: string
+  status: HospitalAcceptance
+  branch?: string
+  neonatologists?: string
+  anesthesiologists?: string
+  deliveryRooms?: string
+  incubators?: string
+  transfusionAvailable?: boolean
+}
+
+export type HospitalType =
+  | '산부인과 의원'
+  | '산부인과 병원'
+  | '종합병원'
+  | '상급종합병원'
+  | '여성병원'
+  | '모자의료센터'
+  | '기타'
+
+export type HospitalAddForm = {
+  name: string
+  type: HospitalType | ''
+  address: string
+  contact: string
+  note: string
+  obstetricians: string
+  neonatologists: string
+  anesthesiologists: string
+  operatingRooms: string
+  deliveryRooms: string
+  nicuBeds: string
+  incubators: string
+  transfusionAvailable: boolean
+  emergencySurgeryAvailable: boolean
+  availability: 'available' | 'conditional' | 'unavailable'
 }
