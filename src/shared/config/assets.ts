@@ -1,6 +1,10 @@
 export const hospitalIcon = new URL('../../assets/transport/hospital.svg', import.meta.url).href
 export const reportIcon = new URL('../../assets/transport/report.svg', import.meta.url).href
 export const chevronIcon = new URL('../../assets/transport/chevron.svg', import.meta.url).href
+export const hospitalSearchMapImage = new URL('../../assets/transport/hospital-search-map.png', import.meta.url).href
+export const hospitalSearchPinIcon = new URL('../../assets/transport/hospital-search-pin.svg', import.meta.url).href
+export const compareDropdownIcon = new URL('../../assets/transport/compare-dropdown.svg', import.meta.url).href
+export const compareAiIcon = new URL('../../assets/transport/compare-ai.svg', import.meta.url).href
 export const ambulanceImage = new URL('../../assets/transport/ambulance.png', import.meta.url).href
 export const herePinIcon = new URL('../../assets/transport/here-pin.svg', import.meta.url).href
 export const carIcon = new URL('../../assets/transport/car.svg', import.meta.url).href

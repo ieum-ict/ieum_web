@@ -53,7 +53,17 @@ export function PullReqDetailPage({
   const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
 
   if (isResourceDetailOpen) {
-    return <ResourceDetailPage onBack={() => setIsResourceDetailOpen(false)} />
+    return (
+      <ResourceDetailPage
+        title={title}
+        status={status}
+        week={week}
+        day={day}
+        symptoms={symptoms}
+        isNewborn={isNewborn}
+        onBack={() => setIsResourceDetailOpen(false)}
+      />
+    )
   }
 
   return (

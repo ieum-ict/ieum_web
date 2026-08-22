@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { HospitalPage } from '../pages/hospital-page/ui/HospitalPage'
 import { PullReqPage } from '../pages/pull-request/ui/PullReqPage'
 import { SettingsRoutePage } from '../pages/settings-page/ui/SettingsRoutePage'
 import { TransportPage } from '../pages/transport-page'
@@ -31,7 +32,7 @@ export const routes: AppRoute[] = [
   },
   {
     path: '/hospital',
-    element: <div />,
+    element: <HospitalPage />,
   },
   {
     path: '/setting',
