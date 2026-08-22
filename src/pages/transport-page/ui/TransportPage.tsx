@@ -134,6 +134,7 @@ export function TransportPage() {
       <div style={createThemeVars()}>
         <NavigationPlaceholder
           activeTab={transportPage.currentView}
+          onTabChange={transportPage.openNavigationTab}
         />
       </div>
     )
