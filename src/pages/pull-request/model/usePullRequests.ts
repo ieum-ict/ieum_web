@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchTransfers } from '../../../entities/transfer/api/transferApi'
+import { fetchTransfers } from '../../../entities/transfer/api/useTransferApi'
 import type { Transfer } from '../../../entities/transfer/model/types'
 import { formatElapsedMinutes, parseServerDateTime, toPullReqStatusLabel } from '../../../entities/transfer/lib/status'
 import type { PullReqStatus } from '../ui/PullReqCard'

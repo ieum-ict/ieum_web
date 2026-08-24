@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
-import { createTransfer } from '../../../entities/transfer/api/transferApi'
+import { createTransfer } from '../../../entities/transfer/api/useTransferApi'
 import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
-import { defaultRequestDraftForm } from '../../model/requestDraftForm'
+import { defaultRequestDraftForm, validateBasicRequestDraftForm } from '../../model/requestDraftForm'
 import type { FetusType, RequestDraftForm } from '../../model/requestDraftForm'
 import { InputMedicalInformation } from './InputMedicalInformation'
 
@@ -101,9 +101,23 @@ function InputField({
 export function InputInformation({ onBack, onSave, isSaving = false, saveError = null }: InputInformationProps) {
   const [form, setForm] = useState<RequestDraftForm>(defaultRequestDraftForm)
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
+  const [stepError, setStepError] = useState<string | null>(null)
 
   const updateForm = (patch: Partial<RequestDraftForm>) => {
+    setStepError(null)
     setForm((currentValue) => ({ ...currentValue, ...patch }))
+  }
+
+  const openMedicalStep = () => {
+    const validationError = validateBasicRequestDraftForm(form)
+
+    if (validationError) {
+      setStepError(validationError)
+      return
+    }
+
+    setStepError(null)
+    setCurrentStep(2)
   }
 
   const setFetusType = (type: FetusType) => updateForm({ fetusType: type })
@@ -154,6 +168,7 @@ export function InputInformation({ onBack, onSave, isSaving = false, saveError =
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
+          overflowY: 'auto',
           padding: '0px 26px 16px',
           background: lightTheme.background.normal.normal,
         }}
@@ -303,24 +318,41 @@ export function InputInformation({ onBack, onSave, isSaving = false, saveError =
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setCurrentStep(2)}
-          style={{
-            width: '100%',
-            height: '42px',
-            border: 0,
-            borderRadius: '10px',
-            color: lightTheme.background.elevated.normal,
-            fontSize: '18px',
-            fontWeight: 500,
-            lineHeight: 1.3,
-            background: lightTheme.primary.normal,
-            cursor: 'pointer',
-          }}
-        >
-          다음
-        </button>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          {stepError && (
+            <p
+              style={{
+                margin: 0,
+                padding: '0 4px',
+                color: lightTheme.status.destructive,
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.3,
+              }}
+            >
+              {stepError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={openMedicalStep}
+            style={{
+              width: '100%',
+              height: '42px',
+              border: 0,
+              borderRadius: '10px',
+              color: lightTheme.background.elevated.normal,
+              fontSize: '18px',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              background: lightTheme.primary.normal,
+              cursor: 'pointer',
+            }}
+          >
+            다음
+          </button>
+        </div>
       </section>
     </main>
   )

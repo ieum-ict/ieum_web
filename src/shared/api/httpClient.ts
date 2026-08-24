@@ -28,6 +28,11 @@ let accessToken: string | null = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
 let refreshToken: string | null = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY)
 let sessionPromise: Promise<void> | null = null
 
+function syncStoredTokens() {
+  accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+  refreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY)
+}
+
 function storeTokens(tokens: AuthTokens) {
   accessToken = tokens.accessToken
   refreshToken = tokens.refreshToken
@@ -55,8 +60,12 @@ async function rawRequest<T>(path: string, init: RequestInit, useAuth: boolean):
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
 
-  if (useAuth && accessToken) {
-    headers.set('Authorization', `Bearer ${accessToken}`)
+  if (useAuth) {
+    syncStoredTokens()
+
+    if (accessToken) {
+      headers.set('Authorization', `Bearer ${accessToken}`)
+    }
   }
 
   const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers })
@@ -107,9 +116,19 @@ async function refreshSession(): Promise<void> {
   storeTokens(tokens)
 }
 
-function ensureSession(): Promise<void> {
+function hasDevAccount() {
+  return Boolean(devLoginEmail && devLoginPassword)
+}
+
+function ensureSession(): Promise<boolean> {
+  syncStoredTokens()
+
   if (accessToken) {
-    return Promise.resolve()
+    return Promise.resolve(true)
+  }
+
+  if (!hasDevAccount()) {
+    return Promise.resolve(false)
   }
 
   if (!sessionPromise) {
@@ -119,14 +138,14 @@ function ensureSession(): Promise<void> {
     })
   }
 
-  return sessionPromise
+  return sessionPromise.then(() => true)
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  await ensureSession()
+  const hasSession = await ensureSession()
 
   try {
-    return await rawRequest<T>(path, init, true)
+    return await rawRequest<T>(path, init, hasSession)
   } catch (error) {
     if (!(error instanceof ApiError) || error.status !== 401) {
       throw error
@@ -137,7 +156,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     } catch {
       clearTokens()
       sessionPromise = null
-      await ensureSession()
+      const hasNewSession = await ensureSession()
+      return rawRequest<T>(path, init, hasNewSession)
     }
 
     return rawRequest<T>(path, init, true)
