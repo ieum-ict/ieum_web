@@ -1,30 +1,33 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
+import { defaultRequestDraftForm } from '../../model/requestDraftForm'
+import type { FetusType, RequestDraftForm } from '../../model/requestDraftForm'
 import { InputMedicalInformation } from './InputMedicalInformation'
 
 type InputInformationProps = {
   onBack: () => void
-  onSave: () => void
+  onSave: (form: RequestDraftForm) => void
+  isSaving?: boolean
+  saveError?: string | null
 }
-
-type FetusType = 'single' | 'multiple'
 
 function InputField({
   label,
   value,
+  onChange,
   unit,
   placeholder,
   width = '100%',
 }: {
   label?: string
-  value?: string
+  value: string
+  onChange: (value: string) => void
   unit?: string
   placeholder?: string
   width?: string
 }) {
-  const [inputValue, setInputValue] = useState(value ?? '')
-  const hasValue = inputValue.length > 0
+  const hasValue = value.length > 0
 
   return (
     <label
@@ -61,9 +64,9 @@ function InputField({
         <input
           className="input-information__input"
           type="text"
-          value={inputValue}
+          value={value}
           placeholder={placeholder}
-          onChange={(event) => setInputValue(event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           style={{
             width: '100%',
             minWidth: 0,
@@ -95,12 +98,18 @@ function InputField({
   )
 }
 
-export function InputInformation({ onBack, onSave }: InputInformationProps) {
-  const [selectedFetusType, setSelectedFetusType] = useState<FetusType>('single')
+export function InputInformation({ onBack, onSave, isSaving = false, saveError = null }: InputInformationProps) {
+  const [form, setForm] = useState<RequestDraftForm>(defaultRequestDraftForm)
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
 
+  const updateForm = (patch: Partial<RequestDraftForm>) => {
+    setForm((currentValue) => ({ ...currentValue, ...patch }))
+  }
+
+  const setFetusType = (type: FetusType) => updateForm({ fetusType: type })
+
   const getFetusTypeButtonStyle = (type: FetusType) => {
-    const isSelected = selectedFetusType === type
+    const isSelected = form.fetusType === type
 
     return {
       height: '42px',
@@ -116,7 +125,16 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
   }
 
   if (currentStep === 2) {
-    return <InputMedicalInformation onBack={() => setCurrentStep(1)} onSave={onSave} />
+    return (
+      <InputMedicalInformation
+        onBack={() => setCurrentStep(1)}
+        onSave={onSave}
+        form={form}
+        updateForm={updateForm}
+        isSaving={isSaving}
+        saveError={saveError}
+      />
+    )
   }
 
   return (
@@ -190,6 +208,13 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
               gap: '26px',
             }}
           >
+            <InputField
+              label="환자 이름"
+              placeholder="환자 이름을 입력해주세요"
+              value={form.patientName}
+              onChange={(value) => updateForm({ patientName: value })}
+            />
+
             <div style={{ display: 'grid', gap: '6px' }}>
               <span
                 style={{
@@ -209,8 +234,18 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
                   gap: '15px',
                 }}
               >
-                <InputField placeholder="임신 주수" unit="주" />
-                <InputField placeholder="임신 일수" unit="일" />
+                <InputField
+                  placeholder="임신 주수"
+                  unit="주"
+                  value={form.pregnancyWeeks}
+                  onChange={(value) => updateForm({ pregnancyWeeks: value })}
+                />
+                <InputField
+                  placeholder="임신 일수"
+                  unit="일"
+                  value={form.pregnancyDays}
+                  onChange={(value) => updateForm({ pregnancyDays: value })}
+                />
               </div>
             </div>
 
@@ -235,16 +270,16 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
               >
                 <button
                   type="button"
-                  aria-pressed={selectedFetusType === 'single'}
-                  onClick={() => setSelectedFetusType('single')}
+                  aria-pressed={form.fetusType === 'single'}
+                  onClick={() => setFetusType('single')}
                   style={getFetusTypeButtonStyle('single')}
                 >
                   단태아
                 </button>
                 <button
                   type="button"
-                  aria-pressed={selectedFetusType === 'multiple'}
-                  onClick={() => setSelectedFetusType('multiple')}
+                  aria-pressed={form.fetusType === 'multiple'}
+                  onClick={() => setFetusType('multiple')}
                   style={getFetusTypeButtonStyle('multiple')}
                 >
                   다태아
@@ -252,8 +287,19 @@ export function InputInformation({ onBack, onSave }: InputInformationProps) {
               </div>
             </div>
 
-            <InputField label="연령대" placeholder="나이를 입력해주세요" unit="세" />
-            <InputField label="현재 위치" placeholder="현재 위치를 입력해주세요" />
+            <InputField
+              label="연령대"
+              placeholder="나이를 입력해주세요"
+              unit="세"
+              value={form.age}
+              onChange={(value) => updateForm({ age: value })}
+            />
+            <InputField
+              label="현재 위치"
+              placeholder="현재 위치를 입력해주세요"
+              value={form.currentLocation}
+              onChange={(value) => updateForm({ currentLocation: value })}
+            />
           </div>
         </div>
 

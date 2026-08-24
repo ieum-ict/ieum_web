@@ -1,14 +1,11 @@
 import { lightTheme } from '@ict/design-tokens'
 
-export type PullReqStatus = '진행중' | '대기중' | '응답대기' | '완료'
+export type PullReqStatus = '진행중' | '대기중' | '완료' | '취소'
 
 export type PullReqCardProps = {
   title: string
   status: PullReqStatus
-  week?: number
-  day: number
-  symptoms: string[]
-  isNewborn?: boolean
+  description: string
   location: string
   requestedMinutesAgo: number
   onClick?: () => void
@@ -16,25 +13,19 @@ export type PullReqCardProps = {
 
 const statusColors = {
   진행중: lightTheme.primary.normal,
-  대기중: lightTheme.primary.normal,
-  응답대기: lightTheme.status.cautionary,
+  대기중: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
+  취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
 
 export const PullReqCard = ({
   title,
   status,
-  week,
-  day,
-  symptoms,
-  isNewborn = false,
+  description,
   location,
   requestedMinutesAgo,
   onClick,
 }: PullReqCardProps) => {
-  const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
-  const description = `${conditionText} · ${symptoms.join(', ')}`
-
   return (
     <button
       type="button"

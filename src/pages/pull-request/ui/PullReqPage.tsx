@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
+import { createTransfer } from '../../../entities/transfer/api/transferApi'
 import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
+import { usePullRequests } from '../model/usePullRequests'
+import type { PullReqListItem } from '../model/usePullRequests'
+import { buildCreateTransferPayload, validateRequestDraftForm } from '../model/requestDraftForm'
+import type { RequestDraftForm } from '../model/requestDraftForm'
 import { InputInformation } from './input-info/InputInformation'
 import { PullReqCard } from './PullReqCard'
 import { PullReqDetailPage } from './PullReqDetailPage'
@@ -10,87 +15,15 @@ import type { PullReqStatus } from './PullReqCard'
 
 type PullReqFilter = '전체' | PullReqStatus
 
-type PullReqItem = {
-  id: number
-  title: string
-  status: PullReqStatus
-  week?: number
-  day: number
-  symptoms: string[]
-  isNewborn?: boolean
-  location: string
-  requestedMinutesAgo: number
-}
-
-const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '응답대기', '완료']
-
-const pullReqItems: PullReqItem[] = [
-  {
-    id: 1,
-    title: '위험 임산부',
-    status: '진행중',
-    week: 28,
-    day: 1,
-    symptoms: ['출혈', '진통'],
-    location: '청주시 상당구',
-    requestedMinutesAgo: 10,
-  },
-  {
-    id: 2,
-    title: '고위험 산모',
-    status: '대기중',
-    week: 34,
-    day: 4,
-    symptoms: ['고혈압', '두통'],
-    location: '청주시 흥덕구',
-    requestedMinutesAgo: 18,
-  },
-  {
-    id: 3,
-    title: '응급 분만 요청',
-    status: '진행중',
-    week: 39,
-    day: 2,
-    symptoms: ['양수 파수'],
-    location: '청주시 서원구',
-    requestedMinutesAgo: 25,
-  },
-  {
-    id: 4,
-    title: '신생아 이송',
-    status: '응답대기',
-    day: 2,
-    symptoms: ['호흡 곤란'],
-    isNewborn: true,
-    location: '청주시 청원구',
-    requestedMinutesAgo: 32,
-  },
-  {
-    id: 5,
-    title: '위험 임산부',
-    status: '대기중',
-    week: 31,
-    day: 6,
-    symptoms: ['복통', '발열'],
-    location: '증평군 증평읍',
-    requestedMinutesAgo: 41,
-  },
-  {
-    id: 6,
-    title: '산모 응급 요청',
-    status: '완료',
-    week: 36,
-    day: 0,
-    symptoms: ['태동 감소'],
-    location: '괴산군 괴산읍',
-    requestedMinutesAgo: 48,
-  },
-]
+const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '대기중', '완료']
 
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
   const [isInputOpen, setIsInputOpen] = useState(false)
-  const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqItem | null>(null)
+  const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqListItem | null>(null)
+  const [isSavingRequest, setIsSavingRequest] = useState(false)
+  const [saveRequestError, setSaveRequestError] = useState<string | null>(null)
+  const { items: pullReqItems, isLoading, error, refetch } = usePullRequests()
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
 
@@ -100,12 +33,40 @@ export const PullReqPage = () => {
     }
 
     setIsInputOpen(false)
+    setSaveRequestError(null)
+    void refetch()
+  }
+
+  const handleSaveRequest = async (form: RequestDraftForm) => {
+    const validationError = validateRequestDraftForm(form)
+
+    if (validationError) {
+      setSaveRequestError(validationError)
+      return
+    }
+
+    setIsSavingRequest(true)
+    setSaveRequestError(null)
+
+    try {
+      await createTransfer(buildCreateTransferPayload(form))
+      closeInputForm()
+    } catch {
+      setSaveRequestError('전원 요청 저장에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSavingRequest(false)
+    }
   }
 
   if (isInputOpen) {
     return (
       <div style={createThemeVars()}>
-        <InputInformation onBack={() => setIsInputOpen(false)} onSave={closeInputForm} />
+        <InputInformation
+          onBack={() => setIsInputOpen(false)}
+          onSave={handleSaveRequest}
+          isSaving={isSavingRequest}
+          saveError={saveRequestError}
+        />
       </div>
     )
   }
@@ -116,10 +77,8 @@ export const PullReqPage = () => {
         <PullReqDetailPage
           title={selectedPullReqItem.title}
           status={selectedPullReqItem.status}
-          week={selectedPullReqItem.week}
-          day={selectedPullReqItem.day}
-          symptoms={selectedPullReqItem.symptoms}
-          isNewborn={selectedPullReqItem.isNewborn}
+          description={selectedPullReqItem.description}
+          requestedAt={selectedPullReqItem.requestedAt}
         />
       </div>
     )
@@ -211,20 +170,29 @@ export const PullReqPage = () => {
               gap: '12px',
             }}
           >
-            {filteredPullReqItems.map((item) => (
-              <PullReqCard
-                key={item.id}
-                title={item.title}
-                status={item.status}
-                week={item.week}
-                day={item.day}
-                symptoms={item.symptoms}
-                isNewborn={item.isNewborn}
-                location={item.location}
-                requestedMinutesAgo={item.requestedMinutesAgo}
-                onClick={() => setSelectedPullReqItem(item)}
-              />
-            ))}
+            {isLoading ? (
+              <p style={{ margin: 0, color: lightTheme.label.alternative, fontSize: '15px' }}>
+                불러오는 중...
+              </p>
+            ) : error ? (
+              <p style={{ margin: 0, color: lightTheme.status.destructive, fontSize: '15px' }}>{error}</p>
+            ) : filteredPullReqItems.length === 0 ? (
+              <p style={{ margin: 0, color: lightTheme.label.alternative, fontSize: '15px' }}>
+                전원 요청이 없습니다.
+              </p>
+            ) : (
+              filteredPullReqItems.map((item) => (
+                <PullReqCard
+                  key={item.id}
+                  title={item.title}
+                  status={item.status}
+                  description={item.description}
+                  location={item.location}
+                  requestedMinutesAgo={item.requestedMinutesAgo}
+                  onClick={() => setSelectedPullReqItem(item)}
+                />
+              ))
+            )}
           </div>
         </section>
 

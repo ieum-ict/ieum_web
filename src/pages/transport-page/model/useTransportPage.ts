@@ -18,9 +18,12 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   notificationSettings,
+  severityLabels,
   transferDestination,
   transferStart,
 } from '../../../entities/transport/model/constants'
+import { fetchTransfers, postTransferUpdate, startTransfer, updateTransferStatus } from '../../../entities/transfer/api/transferApi'
+import type { Transfer } from '../../../entities/transfer/model/types'
 import type {
   AppView,
   Coordinate,
@@ -57,6 +60,18 @@ function normalizeHospitalAddForm(form: HospitalAddForm): HospitalAddForm {
 
 function getTransportViewFromHash(hash: string): AppView {
   return hash === '#update' ? 'update' : 'map'
+}
+
+function formatUpdateFormContent(form: UpdateFormData): string {
+  return [
+    `혈압 ${form.bloodPressureSystolic}/${form.bloodPressureDiastolic}mmHg`,
+    `맥박 ${form.pulse}bpm`,
+    `산소포화도 ${form.oxygenSaturation}%`,
+    `진통 ${severityLabels[form.pain]}`,
+    `출혈 ${severityLabels[form.bleeding]}`,
+    `양수 파수 ${severityLabels[form.amnioticFluidLeak]}`,
+    `태아 심박수 ${form.fetalHeartRate}bpm`,
+  ].join(', ')
 }
 
 function createSheetHandlers(
@@ -124,7 +139,9 @@ export function useTransportPage() {
   const [isHospitalSheetOpen, setIsHospitalSheetOpen] = useState(false)
   const [isContactSheetOpen, setIsContactSheetOpen] = useState(false)
   const [isTransferCompleted, setIsTransferCompleted] = useState(false)
-  const [hasActiveTransfer, setHasActiveTransfer] = useState(true)
+  const [hasActiveTransfer, setHasActiveTransfer] = useState(false)
+  const [activeTransfer, setActiveTransfer] = useState<Transfer | null>(null)
+  const [pendingTransfer, setPendingTransfer] = useState<Transfer | null>(null)
   const [sheetDragOffset, setSheetDragOffset] = useState(0)
   const [hospitalSheetDragOffset, setHospitalSheetDragOffset] = useState(0)
   const [contactSheetDragOffset, setContactSheetDragOffset] = useState(0)
@@ -207,6 +224,37 @@ export function useTransportPage() {
 
   useEffect(() => {
     setDraftHospitalAddForm((currentValue) => normalizeHospitalAddForm(currentValue))
+  }, [])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    async function loadTransfers() {
+      try {
+        const transfers = await fetchTransfers()
+        if (isCancelled) {
+          return
+        }
+
+        const inProgressTransfer = transfers.find((transfer) => transfer.status === 'IN_PROGRESS') ?? null
+        const requestedTransfer = transfers.find((transfer) => transfer.status === 'REQUESTED') ?? null
+
+        setActiveTransfer(inProgressTransfer)
+        setPendingTransfer(requestedTransfer)
+        setHasActiveTransfer(Boolean(inProgressTransfer))
+      } catch {
+        if (!isCancelled) {
+          setActiveTransfer(null)
+          setPendingTransfer(null)
+          setHasActiveTransfer(false)
+        }
+      }
+    }
+
+    void loadTransfers()
+    return () => {
+      isCancelled = true
+    }
   }, [])
 
   const projectedCenter = useMemo(() => project(center, zoom), [center, zoom])
@@ -401,6 +449,12 @@ export function useTransportPage() {
     setIsTransferCompleted(true)
     setIsTransportSheetOpen(false)
     setSheetDragOffset(0)
+
+    if (activeTransfer) {
+      void updateTransferStatus(activeTransfer.id, 'HANDED_OVER')
+        .then(setActiveTransfer)
+        .catch(() => {})
+    }
   }
 
   const openUpdateView = () => {
@@ -415,9 +469,25 @@ export function useTransportPage() {
   }
 
   const openRequestsFallback = () => {
-    setHasActiveTransfer(true)
-    setCurrentView('map')
-    window.location.hash = ''
+    window.history.pushState(null, '', '/pull-request')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  const startPendingTransfer = async () => {
+    if (!pendingTransfer) {
+      return
+    }
+
+    try {
+      const started = await startTransfer(pendingTransfer.id)
+      setActiveTransfer(started)
+      setPendingTransfer(null)
+      setHasActiveTransfer(true)
+      setCurrentView('map')
+      window.location.hash = ''
+    } catch {
+      // 이송 시작에 실패하면 빈 화면에 머무른다
+    }
   }
 
   const openNavigationTab = (tab: NavigationTab) => {
@@ -613,12 +683,20 @@ export function useTransportPage() {
         hour12: false,
       }).format(new Date()),
     )
+
+    if (activeTransfer) {
+      void postTransferUpdate(activeTransfer.id, formatUpdateFormContent(draftUpdateForm)).catch(() => {})
+    }
+
     closeUpdateView()
   }
 
   return {
     currentView,
     hasActiveTransfer,
+    activeTransfer,
+    pendingTransfer,
+    startPendingTransfer,
     mapRef,
     tiles,
     routePath,

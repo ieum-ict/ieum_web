@@ -1,26 +1,32 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
+import type { RequestDraftForm, SeverityLevel } from '../../model/requestDraftForm'
 import { InputFinalInformation } from './InputFinalInformation'
 
 type InputMedicalInformationProps = {
   onBack: () => void
-  onSave: () => void
+  onSave: (form: RequestDraftForm) => void
+  form: RequestDraftForm
+  updateForm: (patch: Partial<RequestDraftForm>) => void
+  isSaving?: boolean
+  saveError?: string | null
 }
-
-type BleedingLevel = 'none' | 'little' | 'many'
 
 function MedicalInputField({
   label,
   unit,
   placeholder,
+  value,
+  onChange,
 }: {
   label: string
   unit: string
   placeholder: string
+  value: string
+  onChange: (value: string) => void
 }) {
-  const [inputValue, setInputValue] = useState('')
-  const hasValue = inputValue.length > 0
+  const hasValue = value.length > 0
 
   return (
     <label style={{ display: 'grid', gap: '6px' }}>
@@ -49,9 +55,9 @@ function MedicalInputField({
         <input
           className="input-information__input"
           type="text"
-          value={inputValue}
+          value={value}
           placeholder={placeholder}
-          onChange={(event) => setInputValue(event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           style={{
             width: '100%',
             minWidth: 0,
@@ -81,12 +87,18 @@ function MedicalInputField({
   )
 }
 
-export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformationProps) {
-  const [selectedBleedingLevel, setSelectedBleedingLevel] = useState<BleedingLevel>('none')
+export function InputMedicalInformation({
+  onBack,
+  onSave,
+  form,
+  updateForm,
+  isSaving = false,
+  saveError = null,
+}: InputMedicalInformationProps) {
   const [isFinalStepOpen, setIsFinalStepOpen] = useState(false)
 
-  const getBleedingButtonStyle = (level: BleedingLevel) => {
-    const isSelected = selectedBleedingLevel === level
+  const getBleedingButtonStyle = (level: SeverityLevel) => {
+    const isSelected = form.bleedingLevel === level
 
     return {
       height: '42px',
@@ -102,7 +114,16 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
   }
 
   if (isFinalStepOpen) {
-    return <InputFinalInformation onBack={() => setIsFinalStepOpen(false)} onSave={onSave} />
+    return (
+      <InputFinalInformation
+        onBack={() => setIsFinalStepOpen(false)}
+        onSave={onSave}
+        form={form}
+        updateForm={updateForm}
+        isSaving={isSaving}
+        saveError={saveError}
+      />
+    )
   }
 
   return (
@@ -166,9 +187,27 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
           </div>
 
           <div style={{ display: 'grid', gap: '26px' }}>
-            <MedicalInputField label="혈압" placeholder="혈압을 입력해주세요" unit="mmHg" />
-            <MedicalInputField label="맥박" placeholder="맥박을 입력해주세요" unit="bpm" />
-            <MedicalInputField label="산소포화도" placeholder="산소포화도를 입력해주세요" unit="%" />
+            <MedicalInputField
+              label="혈압"
+              placeholder="혈압을 입력해주세요"
+              unit="mmHg"
+              value={form.bloodPressure}
+              onChange={(value) => updateForm({ bloodPressure: value })}
+            />
+            <MedicalInputField
+              label="맥박"
+              placeholder="맥박을 입력해주세요"
+              unit="bpm"
+              value={form.pulse}
+              onChange={(value) => updateForm({ pulse: value })}
+            />
+            <MedicalInputField
+              label="산소포화도"
+              placeholder="산소포화도를 입력해주세요"
+              unit="%"
+              value={form.oxygenSaturation}
+              onChange={(value) => updateForm({ oxygenSaturation: value })}
+            />
 
             <div style={{ display: 'grid', gap: '12px' }}>
               <span
@@ -191,24 +230,24 @@ export function InputMedicalInformation({ onBack, onSave }: InputMedicalInformat
               >
                 <button
                   type="button"
-                  aria-pressed={selectedBleedingLevel === 'none'}
-                  onClick={() => setSelectedBleedingLevel('none')}
+                  aria-pressed={form.bleedingLevel === 'none'}
+                  onClick={() => updateForm({ bleedingLevel: 'none' })}
                   style={getBleedingButtonStyle('none')}
                 >
                   없음
                 </button>
                 <button
                   type="button"
-                  aria-pressed={selectedBleedingLevel === 'little'}
-                  onClick={() => setSelectedBleedingLevel('little')}
+                  aria-pressed={form.bleedingLevel === 'little'}
+                  onClick={() => updateForm({ bleedingLevel: 'little' })}
                   style={getBleedingButtonStyle('little')}
                 >
                   조금
                 </button>
                 <button
                   type="button"
-                  aria-pressed={selectedBleedingLevel === 'many'}
-                  onClick={() => setSelectedBleedingLevel('many')}
+                  aria-pressed={form.bleedingLevel === 'many'}
+                  onClick={() => updateForm({ bleedingLevel: 'many' })}
                   style={getBleedingButtonStyle('many')}
                 >
                   많이
