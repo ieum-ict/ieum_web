@@ -1,25 +1,30 @@
-import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
+import type { RequestDraftForm, SeverityLevel } from '../../model/requestDraftForm'
 
 type InputFinalInformationProps = {
   onBack: () => void
-  onSave: () => void
+  onSave: (form: RequestDraftForm) => void
+  form: RequestDraftForm
+  updateForm: (patch: Partial<RequestDraftForm>) => void
+  isSaving?: boolean
+  saveError?: string | null
 }
-
-type SeverityLevel = 'none' | 'little' | 'many'
 
 function FinalInputField({
   label,
   unit,
   placeholder,
+  value,
+  onChange,
 }: {
   label: string
   unit?: string
   placeholder: string
+  value: string
+  onChange: (value: string) => void
 }) {
-  const [inputValue, setInputValue] = useState('')
-  const hasValue = inputValue.length > 0
+  const hasValue = value.length > 0
 
   return (
     <label style={{ display: 'grid', gap: '6px' }}>
@@ -48,9 +53,9 @@ function FinalInputField({
         <input
           className="input-information__input"
           type="text"
-          value={inputValue}
+          value={value}
           placeholder={placeholder}
-          onChange={(event) => setInputValue(event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           style={{
             width: '100%',
             minWidth: 0,
@@ -82,10 +87,14 @@ function FinalInputField({
   )
 }
 
-export function InputFinalInformation({ onBack, onSave }: InputFinalInformationProps) {
-  const [painLevel, setPainLevel] = useState<SeverityLevel>('none')
-  const [amnioticFluidLeakLevel, setAmnioticFluidLeakLevel] = useState<SeverityLevel>('none')
-
+export function InputFinalInformation({
+  onBack,
+  onSave,
+  form,
+  updateForm,
+  isSaving = false,
+  saveError = null,
+}: InputFinalInformationProps) {
   const getSeverityButtonStyle = (isSelected: boolean) => ({
     height: '42px',
     border: `1px solid ${isSelected ? lightTheme.primary.normal : lightTheme.label.disable}`,
@@ -188,7 +197,12 @@ export function InputFinalInformation({ onBack, onSave }: InputFinalInformationP
           </div>
 
           <div style={{ display: 'grid', gap: '26px' }}>
-            <FinalInputField label="출발 의료기관" placeholder="출발 의료기관을 입력해주세요" />
+            <FinalInputField
+              label="출발 의료기관"
+              placeholder="출발 의료기관을 입력해주세요"
+              value={form.departureInstitution}
+              onChange={(value) => updateForm({ departureInstitution: value })}
+            />
 
             <div style={{ display: 'grid', gap: '12px' }}>
               <span
@@ -202,7 +216,7 @@ export function InputFinalInformation({ onBack, onSave }: InputFinalInformationP
               >
                 진통
               </span>
-              {renderSeverityOptions(painLevel, setPainLevel)}
+              {renderSeverityOptions(form.painLevel, (level) => updateForm({ painLevel: level }))}
             </div>
 
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -217,31 +231,56 @@ export function InputFinalInformation({ onBack, onSave }: InputFinalInformationP
               >
                 양수 파수
               </span>
-              {renderSeverityOptions(amnioticFluidLeakLevel, setAmnioticFluidLeakLevel)}
+              {renderSeverityOptions(form.amnioticFluidLeakLevel, (level) => updateForm({ amnioticFluidLeakLevel: level }))}
             </div>
 
-            <FinalInputField label="태아 심박수" placeholder="태아 심박수를 입력해주세요" unit="bpm" />
+            <FinalInputField
+              label="태아 심박수"
+              placeholder="태아 심박수를 입력해주세요"
+              unit="bpm"
+              value={form.fetalHeartRate}
+              onChange={(value) => updateForm({ fetalHeartRate: value })}
+            />
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onSave}
-          style={{
-            width: '100%',
-            height: '42px',
-            border: 0,
-            borderRadius: '10px',
-            color: lightTheme.background.elevated.normal,
-            fontSize: '18px',
-            fontWeight: 500,
-            lineHeight: 1.3,
-            background: lightTheme.primary.normal,
-            cursor: 'pointer',
-          }}
-        >
-          저장
-        </button>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          {saveError && (
+            <p
+              style={{
+                margin: 0,
+                padding: '0 4px',
+                color: lightTheme.status.destructive,
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.3,
+              }}
+            >
+              {saveError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={() => onSave(form)}
+            style={{
+              width: '100%',
+              height: '42px',
+              border: 0,
+              borderRadius: '10px',
+              color: lightTheme.background.elevated.normal,
+              fontSize: '18px',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              background: lightTheme.primary.normal,
+              opacity: isSaving ? 0.6 : 1,
+              cursor: isSaving ? 'default' : 'pointer',
+            }}
+          >
+            {isSaving ? '저장 중...' : '저장'}
+          </button>
+        </div>
       </section>
     </main>
   )
