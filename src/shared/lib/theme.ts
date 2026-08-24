@@ -9,10 +9,14 @@ export function createThemeVars(): CSSProperties {
     '--label-neutral': lightTheme.label.neutral,
     '--label-alternative': lightTheme.label.alternative,
     '--label-assistive': lightTheme.label.assistive,
+    '--label-disable': lightTheme.label.disable,
     '--background-normal': lightTheme.background.normal.normal,
+    '--background-normal-alternative': lightTheme.background.normal.alternative,
     '--background-elevated': lightTheme.background.elevated.normal,
+    '--fill-normal': lightTheme.fill.normal,
     '--fill-alternative': lightTheme.fill.alternative,
     '--interaction-inactive': lightTheme.interaction.inactive,
     '--line-neutral': lightTheme.line.neutral,
+    '--status-destructive': lightTheme.status.destructive,
   } as CSSProperties
 }

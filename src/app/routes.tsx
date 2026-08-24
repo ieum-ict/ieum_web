@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { HospitalPage } from '../pages/hospital-page/ui/HospitalPage'
+import { LoginPage } from '../pages/login-page/ui/LoginPage'
 import { PullReqPage } from '../pages/pull-request/ui/PullReqPage'
 import { SettingsRoutePage } from '../pages/settings-page/ui/SettingsRoutePage'
 import { TransportPage } from '../pages/transport-page'
@@ -8,6 +9,7 @@ import type { NavigationTab } from '../widgets/bottom-navigation/ui/BottomNaviga
 type AppRoute = {
   path: string
   element: ReactNode
+  showBottomNavigation?: boolean
 }
 
 const navigationPathByTab = {
@@ -20,7 +22,13 @@ const navigationPathByTab = {
 export const routes: AppRoute[] = [
   {
     path: '/',
-    element: <>ddd</>,
+    element: <LoginPage />,
+    showBottomNavigation: false,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+    showBottomNavigation: false,
   },
   {
     path: '/transport',
@@ -42,6 +50,10 @@ export const routes: AppRoute[] = [
 
 export function getRouteElement(pathname: string) {
   return routes.find((route) => route.path === pathname)?.element ?? routes[0].element
+}
+
+export function shouldShowBottomNavigation(pathname: string) {
+  return routes.find((route) => route.path === pathname)?.showBottomNavigation ?? true
 }
 
 export function getPathFromNavigationTab(tab: NavigationTab) {
