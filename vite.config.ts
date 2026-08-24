@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const proxiedApiPaths = ['/auth', '/transfer', '/transfers', '/requests', '/hospitals', '/users', '/admin', '/api']
+const proxiedApiPaths = ['/auth', '/transfers', '/requests', '/hospitals', '/users', '/admin', '/api']
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
