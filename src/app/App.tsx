@@ -3,7 +3,7 @@ import { createThemeVars } from '../shared/lib/theme'
 import { BottomNavigation } from '../widgets/bottom-navigation/ui/BottomNavigation'
 import type { NavigationTab } from '../widgets/bottom-navigation/ui/BottomNavigation'
 import '../App.css'
-import { getNavigationTabFromPath, getPathFromNavigationTab, getRouteElement } from './routes'
+import { getNavigationTabFromPath, getPathFromNavigationTab, getRouteElement, shouldShowBottomNavigation } from './routes'
 
 export default function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname)
@@ -38,11 +38,15 @@ export default function App() {
     setPathname(nextPath)
   }
 
+  const showBottomNavigation = shouldShowBottomNavigation(pathname)
+
   return (
     <div style={createThemeVars()}>
       <main className="app-shell">
         <div className="app-shell__content">{getRouteElement(pathname)}</div>
-        <BottomNavigation activeTab={getNavigationTabFromPath(pathname)} onTabChange={handleTabChange} />
+        {showBottomNavigation ? (
+          <BottomNavigation activeTab={getNavigationTabFromPath(pathname)} onTabChange={handleTabChange} />
+        ) : null}
       </main>
     </div>
   )
