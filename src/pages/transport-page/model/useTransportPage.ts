@@ -22,7 +22,7 @@ import {
   transferDestination,
   transferStart,
 } from '../../../entities/transport/model/constants'
-import { fetchTransfers, postTransferUpdate, startTransfer, updateTransferStatus } from '../../../entities/transfer/api/transferApi'
+import { fetchTransfers, postTransferUpdate, startTransfer, updateTransferStatus } from '../../../entities/transfer/api/useTransferApi'
 import type { Transfer } from '../../../entities/transfer/model/types'
 import type {
   AppView,
@@ -236,12 +236,13 @@ export function useTransportPage() {
           return
         }
 
-        const inProgressTransfer = transfers.find((transfer) => transfer.status === 'IN_PROGRESS') ?? null
-        const requestedTransfer = transfers.find((transfer) => transfer.status === 'REQUESTED') ?? null
+        const connectedTransfer = [...transfers].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )[0] ?? null
 
-        setActiveTransfer(inProgressTransfer)
-        setPendingTransfer(requestedTransfer)
-        setHasActiveTransfer(Boolean(inProgressTransfer))
+        setActiveTransfer(connectedTransfer)
+        setPendingTransfer(null)
+        setHasActiveTransfer(Boolean(connectedTransfer))
       } catch {
         if (!isCancelled) {
           setActiveTransfer(null)
