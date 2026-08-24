@@ -3,6 +3,7 @@ import { HospitalPage } from '../pages/hospital-page/ui/HospitalPage'
 import { LoginPage } from '../pages/login-page/ui/LoginPage'
 import { PullReqPage } from '../pages/pull-request/ui/PullReqPage'
 import { SettingsRoutePage } from '../pages/settings-page/ui/SettingsRoutePage'
+import { SignupPage } from '../pages/signup-page/ui/SignupPage'
 import { TransportPage } from '../pages/transport-page'
 import type { NavigationTab } from '../widgets/bottom-navigation/ui/BottomNavigation'
 
@@ -28,6 +29,11 @@ export const routes: AppRoute[] = [
   {
     path: '/login',
     element: <LoginPage />,
+    showBottomNavigation: false,
+  },
+  {
+    path: '/signup',
+    element: <SignupPage />,
     showBottomNavigation: false,
   },
   {

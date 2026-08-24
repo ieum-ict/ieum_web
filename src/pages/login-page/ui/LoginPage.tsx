@@ -13,6 +13,15 @@ import './login-page.css'
 const errorMessage =
   '아이디 또는 비밀번호를 다시 확인하세요. 등록되지 않은 이메일이거나, 이메일 또는 비밀번호를 잘못 입력하셨습니다.'
 
+function navigateTo(path: string) {
+  if (window.location.pathname === path) {
+    return
+  }
+
+  window.history.pushState(null, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
 function StatusBar() {
   return (
     <div className="login-status-bar" aria-hidden="true">
@@ -63,7 +72,7 @@ export function LoginPage() {
                     className={hasError ? 'is-invalid' : ''}
                     type="text"
                     value={loginId}
-                    placeholder="아이디"
+                    placeholder="아이디를 입력해주세요"
                     autoComplete="username"
                     aria-invalid={hasError}
                     onChange={(event) => {
@@ -79,7 +88,7 @@ export function LoginPage() {
                     className={hasError ? 'is-invalid' : ''}
                     type="password"
                     value={password}
-                    placeholder="비밀번호"
+                    placeholder="비밀번호를 입력해주세요"
                     autoComplete="current-password"
                     aria-invalid={hasError}
                     aria-describedby={hasError ? 'login-error-message' : undefined}
@@ -98,7 +107,9 @@ export function LoginPage() {
 
               <div className="login-signup-prompt">
                 <span>아직 계정이 없으신가요?</span>
-                <button type="button">회원가입</button>
+                <button type="button" onClick={() => navigateTo('/signup')}>
+                  회원가입
+                </button>
               </div>
             </div>
           </div>
