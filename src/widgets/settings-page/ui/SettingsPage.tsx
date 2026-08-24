@@ -7,9 +7,17 @@ import {
 } from '../../../shared/config/assets'
 
 type SettingsPageProps = {
+  profile: {
+    name: string
+    email: string
+    role?: string
+  } | null
+  isLoading?: boolean
+  error?: string | null
   onOpenAlerts: () => void
   onOpenHospitalManagement: () => void
   onOpenProfileEdit: () => void
+  onLogout: () => void
 }
 
 const settingItems = [
@@ -19,9 +27,13 @@ const settingItems = [
 ] as const
 
 export function SettingsPage({
+  profile,
+  isLoading = false,
+  error,
   onOpenAlerts,
   onOpenHospitalManagement,
   onOpenProfileEdit,
+  onLogout,
 }: SettingsPageProps) {
   const handleItemClick = (action: (typeof settingItems)[number]['action']) => {
     if (action === 'alerts') {
@@ -50,14 +62,18 @@ export function SettingsPage({
           </div>
 
           <div className="settings-page__profile-copy">
-            <h2>홍길동</h2>
-            <p>
-              <span>hongkd@gmail.com</span>
-              <span aria-hidden="true">·</span>
-              <span>산부인과 전문의</span>
-            </p>
+            <h2>{isLoading ? '불러오는 중' : profile?.name || '회원 정보 없음'}</h2>
+            {profile ? (
+              <p>
+                <span>{profile.email}</span>
+                {profile.role ? <span aria-hidden="true">·</span> : null}
+                {profile.role ? <span>{profile.role}</span> : null}
+              </p>
+            ) : null}
           </div>
         </div>
+
+        {error ? <p className="settings-page__error">{error}</p> : null}
 
         <section className="settings-card" aria-label="설정 항목">
           <div className="settings-card__list">
@@ -78,7 +94,7 @@ export function SettingsPage({
           </div>
 
           <div className="settings-card__actions">
-            <button className="settings-card__secondary" type="button">
+            <button className="settings-card__secondary" type="button" onClick={onLogout}>
               로그아웃
             </button>
             <button className="settings-card__danger" type="button">

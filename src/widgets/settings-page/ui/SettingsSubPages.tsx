@@ -30,6 +30,8 @@ type AlertSettingsPageProps = SharedProps & {
 
 type HospitalManagementPageProps = SharedProps & {
   items: HospitalManagementItem[]
+  isLoading?: boolean
+  error?: string | null
   onAddHospital: () => void
   onOpenHospitalDetail: (hospitalId: string) => void
 }
@@ -47,7 +49,13 @@ type HospitalAddPageProps = SharedProps & {
   onAvailabilityChange: (value: HospitalAddForm['availability']) => void
 }
 
-type ProfileEditPageProps = SharedProps
+type ProfileEditPageProps = SharedProps & {
+  profile: {
+    name: string
+    email: string
+    role?: string
+  } | null
+}
 
 type HospitalDetailPageProps = SharedProps & {
   item: HospitalManagementItem
@@ -226,6 +234,8 @@ export function AlertSettingsPage({
 
 export function HospitalManagementPage({
   items,
+  isLoading = false,
+  error,
   onAddHospital,
   onOpenHospitalDetail,
   onBack,
@@ -238,8 +248,12 @@ export function HospitalManagementPage({
           <span>({items.length}곳)</span>
         </div>
 
+        {error ? <p className="settings-page__error">{error}</p> : null}
+
         <div className="hospital-management-page__list">
-          {items.map((item) => (
+          {isLoading ? <p className="settings-page__empty">병원 정보를 불러오는 중입니다.</p> : null}
+          {!isLoading && items.length === 0 ? <p className="settings-page__empty">등록된 병원이 없습니다.</p> : null}
+          {!isLoading && items.map((item) => (
             <button
               key={item.id}
               className="hospital-management-card"
@@ -329,10 +343,6 @@ export function HospitalDetailPage({
   onSave,
 }: HospitalDetailPageProps) {
   const [draftItem, setDraftItem] = useState(item)
-
-  useEffect(() => {
-    setDraftItem(item)
-  }, [item])
 
   const hasChanges = JSON.stringify(draftItem) !== JSON.stringify(item)
 
@@ -636,17 +646,17 @@ export function HospitalAddPage({
   )
 }
 
-export function ProfileEditPage({ onBack }: ProfileEditPageProps) {
+export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
   const inputId = useId()
   const initialProfileForm = {
-    name: '김지현',
-    role: '이송 코디네이터',
-    organization: '서울대학교 병원',
-    department: '응급의료센터/간호사',
-    email: 'rlawlgus@gmail.com',
-    phone: '010-1234-5678',
-    emergencyPhone: '010-5678-1234',
-    region: '서울특별시',
+    name: profile?.name ?? '',
+    role: profile?.role ?? '',
+    organization: '',
+    department: '',
+    email: profile?.email ?? '',
+    phone: '',
+    emergencyPhone: '',
+    region: '',
   }
   const [savedProfilePreview, setSavedProfilePreview] = useState(settingsProfileIcon)
   const [profilePreview, setProfilePreview] = useState(settingsProfileIcon)

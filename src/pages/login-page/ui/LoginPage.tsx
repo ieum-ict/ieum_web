@@ -8,6 +8,7 @@ import {
   statusCellularIcon,
   statusWifiIcon,
 } from '../../../shared/config/assets'
+import { ApiError, loginWithCredentials } from '../../../shared/api/httpClient'
 import './login-page.css'
 
 const errorMessage =
@@ -40,6 +41,7 @@ export function LoginPage() {
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
   const [hasError, setHasError] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const clearError = () => {
     if (hasError) {
@@ -47,9 +49,20 @@ export function LoginPage() {
     }
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setHasError(true)
+    setIsSubmitting(true)
+    setHasError(false)
+
+    try {
+      await loginWithCredentials(loginId, password)
+      navigateTo('/transport')
+    } catch (error) {
+      console.error(error instanceof ApiError ? error.message : error)
+      setHasError(true)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -116,7 +129,7 @@ export function LoginPage() {
 
           <div className="login-card__bottom">
             <button className="login-submit" type="submit">
-              로그인
+              {isSubmitting ? '로그인 중' : '로그인'}
             </button>
 
             <div className="login-divider">
