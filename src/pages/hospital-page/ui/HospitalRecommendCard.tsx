@@ -6,12 +6,15 @@ export type HospitalRecommendationStatus = 'available' | 'conditional' | 'unavai
 export type HospitalRecommendCardProps = {
   name: string
   status: HospitalRecommendationStatus
-  distanceKm: number
-  travelMinutes: number
-  nicuAvailable: number
-  nicuTotal: number
-  hasOperatingRoom: boolean
-  hasTransfusion: boolean
+  distanceKm?: number
+  travelMinutes?: number
+  nicuAvailable?: number
+  nicuTotal?: number
+  hasOperatingRoom?: boolean
+  hasTransfusion?: boolean
+  address?: string
+  phone?: string
+  resourcesContent?: string
   onClick?: () => void
 }
 
@@ -39,14 +42,21 @@ export function HospitalRecommendCard({
   nicuTotal,
   hasOperatingRoom,
   hasTransfusion,
+  address,
+  phone,
+  resourcesContent,
   onClick,
 }: HospitalRecommendCardProps) {
   const statusInfo = statusConfig[status]
   const resourceTexts = [
-    `NICU ${nicuAvailable}/${nicuTotal}`,
-    hasOperatingRoom ? '수술실 여유' : '수술실 확인중',
-    hasTransfusion ? '수혈 가능' : '수혈 확인중',
-  ]
+    nicuAvailable !== undefined && nicuTotal !== undefined ? `NICU ${nicuAvailable}/${nicuTotal}` : null,
+    hasOperatingRoom !== undefined ? (hasOperatingRoom ? '수술실 여유' : '수술실 확인중') : null,
+    hasTransfusion !== undefined ? (hasTransfusion ? '수혈 가능' : '수혈 확인중') : null,
+  ].filter((text): text is string => Boolean(text))
+  const metaTexts =
+    distanceKm !== undefined && travelMinutes !== undefined
+      ? [`${distanceKm}km`, `차량 ${travelMinutes}분`]
+      : [address, phone].filter((text): text is string => Boolean(text))
 
   return (
     <button
@@ -132,60 +142,79 @@ export function HospitalRecommendCard({
           </span>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            color: lightTheme.label.neutral,
-            fontSize: '16px',
-            fontWeight: 500,
-            lineHeight: 1.3,
-          }}
-        >
-          <span>{distanceKm}km</span>
-          <span>·</span>
-          <span>차량 {travelMinutes}분</span>
-        </div>
+        {metaTexts.length > 0 ? (
+          <div
+            style={{
+              minWidth: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              overflow: 'hidden',
+              color: lightTheme.label.neutral,
+              fontSize: '15px',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {metaTexts.map((text, index) => (
+              <span
+                key={text}
+                style={{
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {index > 0 ? '· ' : ''}
+                {text}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            overflow: 'hidden',
-            color: lightTheme.label.alternative,
-            fontSize: '14px',
-            fontWeight: 400,
-            lineHeight: 1.3,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {resourceTexts.map((text, index) => (
-            <span
-              key={text}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              {index > 0 ? (
-                <span
-                  aria-hidden="true"
-                  style={{
-                    color: lightTheme.label.alternative,
-                    fontSize: '16px',
-                    fontWeight: 500,
-                  }}
-                >
-                  ·
-                </span>
-              ) : null}
-              <span>{text}</span>
-            </span>
-          ))}
-        </div>
+        {resourceTexts.length > 0 || resourcesContent ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              overflow: 'hidden',
+              color: lightTheme.label.alternative,
+              fontSize: '14px',
+              fontWeight: 400,
+              lineHeight: 1.3,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {(resourceTexts.length > 0 ? resourceTexts : [resourcesContent]).map((text, index) => (
+              <span
+                key={text}
+                style={{
+                  minWidth: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  overflow: 'hidden',
+                }}
+              >
+                {index > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      color: lightTheme.label.alternative,
+                      fontSize: '16px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    ·
+                  </span>
+                ) : null}
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <img

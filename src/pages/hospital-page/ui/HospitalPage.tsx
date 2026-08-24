@@ -2,19 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, PointerEvent } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { hospitalSearchMapImage, hospitalSearchPinIcon } from '../../../shared/config/assets'
+import { searchHospitals } from '../../../entities/hospital/api/useHospitalApi'
+import type { HospitalSearchResult } from '../../../entities/hospital/model/types'
 import { project, TILE_SIZE, unproject } from '../../../shared/lib/map'
 import { createThemeVars } from '../../../shared/lib/theme'
 import { HospitalRecommendCard } from './HospitalRecommendCard'
-import type { HospitalRecommendCardProps } from './HospitalRecommendCard'
 import type { Coordinate, ScreenPoint } from '../../../shared/lib/map'
 
 type MedicalResource = {
   id: string
   label: string
-}
-
-type HospitalRecommendation = HospitalRecommendCardProps & {
-  id: number
 }
 
 type MapTile = {
@@ -41,53 +38,6 @@ const medicalResources: MedicalResource[] = [
   { id: 'operation-room', label: '응급 수술실' },
   { id: 'nicu', label: 'NICU' },
   { id: 'transfusion', label: '수혈' },
-]
-
-const hospitalRecommendations: HospitalRecommendation[] = [
-  {
-    id: 1,
-    name: 'A대학교병원',
-    status: 'available',
-    distanceKm: 18,
-    travelMinutes: 16,
-    nicuAvailable: 20,
-    nicuTotal: 24,
-    hasOperatingRoom: true,
-    hasTransfusion: true,
-  },
-  {
-    id: 2,
-    name: '청주여성병원',
-    status: 'conditional',
-    distanceKm: 21,
-    travelMinutes: 19,
-    nicuAvailable: 12,
-    nicuTotal: 18,
-    hasOperatingRoom: true,
-    hasTransfusion: false,
-  },
-  {
-    id: 3,
-    name: '충북권역의료센터',
-    status: 'available',
-    distanceKm: 24,
-    travelMinutes: 23,
-    nicuAvailable: 18,
-    nicuTotal: 22,
-    hasOperatingRoom: true,
-    hasTransfusion: true,
-  },
-  {
-    id: 4,
-    name: '상당종합병원',
-    status: 'unavailable',
-    distanceKm: 27,
-    travelMinutes: 28,
-    nicuAvailable: 0,
-    nicuTotal: 12,
-    hasOperatingRoom: false,
-    hasTransfusion: false,
-  },
 ]
 
 function createCurrentLocationTiles(latitude: number, longitude: number): MapTile[] {
@@ -123,7 +73,15 @@ function createCurrentLocationTiles(latitude: number, longitude: number): MapTil
   return tiles
 }
 
-function HospitalSearchPage({ onSearch }: { onSearch: (keyword: string) => void }) {
+function HospitalSearchPage({
+  onSearch,
+  isSearching,
+  searchError,
+}: {
+  onSearch: (keyword: string) => void
+  isSearching: boolean
+  searchError: string | null
+}) {
   const mapDragRef = useRef<MapDragState | null>(null)
   const [keyword, setKeyword] = useState('')
   const [currentMapCenter, setCurrentMapCenter] = useState<Coordinate | null>(null)
@@ -484,7 +442,7 @@ function HospitalSearchPage({ onSearch }: { onSearch: (keyword: string) => void 
 
               <button
                 type="submit"
-                disabled={!trimmedKeyword}
+                disabled={!trimmedKeyword || isSearching}
                 style={{
                   width: '100%',
                   height: '42px',
@@ -495,12 +453,26 @@ function HospitalSearchPage({ onSearch }: { onSearch: (keyword: string) => void 
                   fontWeight: 500,
                   lineHeight: 1.3,
                   background: lightTheme.primary.normal,
-                  opacity: trimmedKeyword ? 1 : 0.45,
-                  cursor: trimmedKeyword ? 'pointer' : 'default',
+                  opacity: trimmedKeyword && !isSearching ? 1 : 0.45,
+                  cursor: trimmedKeyword && !isSearching ? 'pointer' : 'default',
                 }}
               >
-                검색
+                {isSearching ? '검색 중...' : '검색'}
               </button>
+
+              {searchError ? (
+                <p
+                  style={{
+                    margin: 0,
+                    color: lightTheme.status.destructive,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {searchError}
+                </p>
+              ) : null}
             </form>
           </div>
         </section>
@@ -511,9 +483,33 @@ function HospitalSearchPage({ onSearch }: { onSearch: (keyword: string) => void 
 
 export function HospitalPage() {
   const [searchKeyword, setSearchKeyword] = useState<string | null>(null)
+  const [searchedHospitals, setSearchedHospitals] = useState<HospitalSearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+
+  const handleHospitalSearch = async (keyword: string) => {
+    setIsSearching(true)
+    setSearchError(null)
+
+    try {
+      const hospitals = await searchHospitals({ keyword })
+      setSearchedHospitals(hospitals)
+      setSearchKeyword(keyword)
+    } catch {
+      setSearchError('병원 검색에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSearching(false)
+    }
+  }
 
   if (!searchKeyword) {
-    return <HospitalSearchPage onSearch={setSearchKeyword} />
+    return (
+      <HospitalSearchPage
+        onSearch={handleHospitalSearch}
+        isSearching={isSearching}
+        searchError={searchError}
+      />
+    )
   }
 
   return (
@@ -697,9 +693,33 @@ export function HospitalPage() {
                   gap: '12px',
                 }}
               >
-                {hospitalRecommendations.map(({ id, ...hospital }) => (
-                  <HospitalRecommendCard key={id} {...hospital} />
-                ))}
+                {searchedHospitals.length > 0 ? (
+                  searchedHospitals.map((hospital) => (
+                    <HospitalRecommendCard
+                      key={hospital.id}
+                      name={hospital.name}
+                      status="available"
+                      address={hospital.address}
+                      phone={hospital.phone}
+                      resourcesContent={hospital.resourcesContent}
+                    />
+                  ))
+                ) : (
+                  <p
+                    style={{
+                      margin: 0,
+                      padding: '18px',
+                      borderRadius: '10px',
+                      color: lightTheme.label.alternative,
+                      fontSize: '15px',
+                      fontWeight: 500,
+                      lineHeight: 1.4,
+                      background: lightTheme.background.elevated.normal,
+                    }}
+                  >
+                    검색 결과가 없습니다.
+                  </p>
+                )}
               </div>
             </section>
           </div>
