@@ -7,10 +7,7 @@ import type { PullReqStatus } from './PullReqCard'
 type ResourceDetailPageProps = {
   title: string
   status: PullReqStatus
-  week?: number
-  day: number
-  symptoms: string[]
-  isNewborn?: boolean
+  description: string
   onBack: () => void
 }
 
@@ -26,8 +23,8 @@ type SelectedHospital = {
 const statusColors = {
   진행중: lightTheme.status.destructive,
   대기중: lightTheme.primary.normal,
-  응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
+  취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
 
 const hospitalStatusConfig = {
@@ -72,19 +69,9 @@ function SectionTitle({ id, children }: { id: string; children: string }) {
   )
 }
 
-export function ResourceDetailPage({
-  title,
-  status,
-  week,
-  day,
-  symptoms,
-  isNewborn = false,
-  onBack,
-}: ResourceDetailPageProps) {
+export function ResourceDetailPage({ title, status, description, onBack }: ResourceDetailPageProps) {
   const [selectedHospitalIds, setSelectedHospitalIds] = useState(() => new Set([1, 3]))
   const [isHospitalResponseOpen, setIsHospitalResponseOpen] = useState(false)
-  const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
-  const description = `${conditionText} · ${symptoms.join(', ')}`
 
   const toggleHospital = (hospitalId: number) => {
     setSelectedHospitalIds((currentValue) => {

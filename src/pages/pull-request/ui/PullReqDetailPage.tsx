@@ -6,23 +6,18 @@ import { ResourceDetailPage } from './ResourceDetailPage'
 type PullReqDetailPageProps = {
   title: string
   status: PullReqStatus
-  week?: number
-  day: number
-  symptoms: string[]
-  isNewborn?: boolean
+  description: string
+  requestedAt: string
 }
 
 const statusColors = {
   진행중: lightTheme.status.destructive,
   대기중: lightTheme.primary.normal,
-  응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
+  취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
 
-const detailInfo = {
-  requestedAt: '2024.01.31 - 10:00',
-  currentStage: '14팀 대기',
-}
+const currentStage = '14팀 대기'
 
 const detailSteps = [
   { label: '요청 접수', time: '09:20', status: 'done' },
@@ -40,16 +35,7 @@ const detailSteps = [
   { label: '인계 완료', time: '-', status: 'upcoming' },
 ] as const
 
-export function PullReqDetailPage({
-  title,
-  status,
-  week,
-  day,
-  symptoms,
-  isNewborn = false,
-}: PullReqDetailPageProps) {
-  const conditionText = isNewborn ? `생후 ${day}일` : `${week}주 ${day}일`
-  const description = `${conditionText} · ${symptoms.join(', ')}`
+export function PullReqDetailPage({ title, status, description, requestedAt }: PullReqDetailPageProps) {
   const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
 
   if (isResourceDetailOpen) {
@@ -57,10 +43,7 @@ export function PullReqDetailPage({
       <ResourceDetailPage
         title={title}
         status={status}
-        week={week}
-        day={day}
-        symptoms={symptoms}
-        isNewborn={isNewborn}
+        description={description}
         onBack={() => setIsResourceDetailOpen(false)}
       />
     )
@@ -152,11 +135,11 @@ export function PullReqDetailPage({
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                 <span>요청 시간</span>
-                <span>{detailInfo.requestedAt}</span>
+                <span>{requestedAt}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                 <span>현재 단계</span>
-                <span>{detailInfo.currentStage}</span>
+                <span>{currentStage}</span>
               </div>
             </div>
           </section>
