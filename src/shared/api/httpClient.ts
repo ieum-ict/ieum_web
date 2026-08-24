@@ -42,6 +42,15 @@ function clearTokens() {
   localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY)
 }
 
+export function getStoredRefreshToken() {
+  return refreshToken
+}
+
+export function clearStoredAuthTokens() {
+  clearTokens()
+  sessionPromise = null
+}
+
 async function rawRequest<T>(path: string, init: RequestInit, useAuth: boolean): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
@@ -68,6 +77,16 @@ async function loginWithDevAccount(): Promise<void> {
   const tokens = await rawRequest<AuthTokens>(
     '/auth/login',
     { method: 'POST', body: JSON.stringify({ email: devLoginEmail, password: devLoginPassword }) },
+    false,
+  )
+
+  storeTokens(tokens)
+}
+
+export async function loginWithCredentials(email: string, password: string): Promise<void> {
+  const tokens = await rawRequest<AuthTokens>(
+    '/auth/login',
+    { method: 'POST', body: JSON.stringify({ email, password }) },
     false,
   )
 
