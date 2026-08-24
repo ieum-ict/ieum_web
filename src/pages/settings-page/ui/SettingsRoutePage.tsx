@@ -1,11 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  fetchManagedHospitals,
+  fetchMyProfile,
+  logout,
+  type UserProfileResponse,
+  updateHospitalResources,
+} from '../../../entities/settings/api/settingsApi'
 import {
   defaultHospitalAddForm,
-  hospitalManagementItems,
   notificationSettings,
 } from '../../../entities/transport/model/constants'
 import type {
-  HospitalAcceptance,
   HospitalAddForm,
   HospitalManagementItem,
   HospitalType,
@@ -43,19 +48,69 @@ function normalizeHospitalAddForm(form: HospitalAddForm): HospitalAddForm {
 
 export function SettingsRoutePage() {
   const [currentView, setCurrentView] = useState<SettingsRouteView>('home')
+  const [profile, setProfile] = useState<{ name: string; email: string; role?: string } | null>(null)
+  const [isProfileLoading, setIsProfileLoading] = useState(true)
+  const [profileError, setProfileError] = useState<string | null>(null)
   const [savedNotificationSettings, setSavedNotificationSettings] =
     useState<NotificationSettingItem[]>(notificationSettings)
   const [draftNotificationSettings, setDraftNotificationSettings] =
     useState<NotificationSettingItem[]>(notificationSettings)
-  const [hospitalItems, setHospitalItems] = useState<HospitalManagementItem[]>(hospitalManagementItems)
-  const [selectedHospitalItem, setSelectedHospitalItem] = useState<HospitalManagementItem | null>(
-    hospitalManagementItems[0] ?? null,
-  )
+  const [hospitalItems, setHospitalItems] = useState<HospitalManagementItem[]>([])
+  const [isHospitalLoading, setIsHospitalLoading] = useState(true)
+  const [hospitalError, setHospitalError] = useState<string | null>(null)
+  const [selectedHospitalItem, setSelectedHospitalItem] = useState<HospitalManagementItem | null>(null)
   const [hospitalAddStep, setHospitalAddStep] = useState(1)
   const [isHospitalTypeOpen, setIsHospitalTypeOpen] = useState(false)
   const [draftHospitalAddForm, setDraftHospitalAddForm] = useState<HospitalAddForm>(() =>
     normalizeHospitalAddForm(defaultHospitalAddForm),
   )
+
+  useEffect(() => {
+    let isAlive = true
+
+    async function loadSettingsData() {
+      setIsProfileLoading(true)
+      setIsHospitalLoading(true)
+      setProfileError(null)
+      setHospitalError(null)
+
+      const [profileResult, hospitalsResult] = await Promise.allSettled([
+        fetchMyProfile(),
+        fetchManagedHospitals(),
+      ])
+
+      if (!isAlive) {
+        return
+      }
+
+      if (profileResult.status === 'fulfilled') {
+        const nextProfile: UserProfileResponse = profileResult.value
+        setProfile({
+          name: nextProfile.name,
+          email: nextProfile.email,
+        })
+      } else {
+        setProfile(null)
+        setProfileError('회원 정보를 불러오지 못했습니다.')
+      }
+
+      if (hospitalsResult.status === 'fulfilled') {
+        setHospitalItems(hospitalsResult.value)
+        setSelectedHospitalItem(hospitalsResult.value[0] ?? null)
+      } else {
+        setHospitalError('병원 정보를 불러오지 못했습니다.')
+      }
+
+      setIsProfileLoading(false)
+      setIsHospitalLoading(false)
+    }
+
+    void loadSettingsData()
+
+    return () => {
+      isAlive = false
+    }
+  }, [])
 
   const returnToSettingsHome = () => {
     setCurrentView('home')
@@ -155,32 +210,7 @@ export function SettingsRoutePage() {
   }
 
   const submitHospitalAdd = () => {
-    const statusMap: Record<HospitalAddForm['availability'], HospitalAcceptance> = {
-      available: 'available',
-      conditional: 'conditional',
-      unavailable: 'examine',
-    }
-
-    setHospitalItems((currentValue) => [
-      {
-        id: `hospital-${Date.now()}`,
-        name: draftHospitalAddForm.name || '새 병원',
-        distance: '18km',
-        travelTime: '차량 16분',
-        obstetricians: `산부인과 전문의 ${draftHospitalAddForm.obstetricians || '0'}명`,
-        nicuBeds: `NICU병상 ${draftHospitalAddForm.nicuBeds || '0'}개`,
-        operatingRooms: `수술실 ${draftHospitalAddForm.operatingRooms || '0'}개`,
-        status: statusMap[draftHospitalAddForm.availability],
-        branch: '본원',
-        neonatologists: `${draftHospitalAddForm.neonatologists || '0'}명`,
-        anesthesiologists: `${draftHospitalAddForm.anesthesiologists || '0'}명`,
-        deliveryRooms: `${draftHospitalAddForm.deliveryRooms || '0'}개`,
-        incubators: `${draftHospitalAddForm.incubators || '0'}개`,
-        transfusionAvailable: draftHospitalAddForm.transfusionAvailable,
-      },
-      ...currentValue,
-    ])
-
+    setHospitalError('병원 등록 API가 아직 제공되지 않았습니다.')
     closeHospitalAdd()
   }
 
@@ -188,12 +218,21 @@ export function SettingsRoutePage() {
     setCurrentView('profile-edit')
   }
 
-  const saveHospitalDetail = (nextItem: HospitalManagementItem) => {
+  const saveHospitalDetail = async (nextItem: HospitalManagementItem) => {
+    const savedItem = await updateHospitalResources(nextItem).catch(() => nextItem)
+
     setHospitalItems((currentValue) =>
-      currentValue.map((item) => (item.id === nextItem.id ? nextItem : item)),
+      currentValue.map((item) => (item.id === savedItem.id ? savedItem : item)),
     )
-    setSelectedHospitalItem(nextItem)
+    setSelectedHospitalItem(savedItem)
     closeHospitalDetail()
+  }
+
+  const handleLogout = () => {
+    void logout().finally(() => {
+      window.history.pushState(null, '', '/login')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    })
   }
 
   if (currentView === 'alerts') {
@@ -212,6 +251,8 @@ export function SettingsRoutePage() {
     return (
       <HospitalManagementPage
         items={hospitalItems}
+        isLoading={isHospitalLoading}
+        error={hospitalError}
         onAddHospital={openHospitalAdd}
         onOpenHospitalDetail={openHospitalDetail}
         onBack={returnToSettingsHome}
@@ -222,6 +263,7 @@ export function SettingsRoutePage() {
   if (currentView === 'hospital-detail' && selectedHospitalItem) {
     return (
       <HospitalDetailPage
+        key={selectedHospitalItem.id}
         item={selectedHospitalItem}
         onBack={closeHospitalDetail}
         onClose={closeHospitalDetail}
@@ -249,14 +291,18 @@ export function SettingsRoutePage() {
   }
 
   if (currentView === 'profile-edit') {
-    return <ProfileEditPage onBack={returnToSettingsHome} />
+    return <ProfileEditPage profile={profile} onBack={returnToSettingsHome} />
   }
 
   return (
     <SettingsPage
+      profile={profile}
+      isLoading={isProfileLoading}
+      error={profileError}
       onOpenAlerts={openSettingsAlerts}
       onOpenHospitalManagement={openHospitalManagement}
       onOpenProfileEdit={openProfileEdit}
+      onLogout={handleLogout}
     />
   )
 }
