@@ -28,6 +28,8 @@ export function TransportPage() {
       <div style={createThemeVars()}>
         <EmptyTransportState
           onPrimaryAction={transportPage.openRequestsFallback}
+          pendingTransfer={transportPage.pendingTransfer}
+          onStartTransfer={transportPage.startPendingTransfer}
         />
       </div>
     )
