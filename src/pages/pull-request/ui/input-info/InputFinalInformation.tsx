@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
 import type { RequestDraftForm, SeverityLevel } from '../../model/requestDraftForm'
+import { validateFinalRequestDraftForm } from '../../model/requestDraftForm'
 
 type InputFinalInformationProps = {
   onBack: () => void
@@ -95,6 +97,25 @@ export function InputFinalInformation({
   isSaving = false,
   saveError = null,
 }: InputFinalInformationProps) {
+  const [stepError, setStepError] = useState<string | null>(null)
+
+  const handleFieldChange = (patch: Partial<RequestDraftForm>) => {
+    setStepError(null)
+    updateForm(patch)
+  }
+
+  const saveForm = () => {
+    const validationError = validateFinalRequestDraftForm(form)
+
+    if (validationError) {
+      setStepError(validationError)
+      return
+    }
+
+    setStepError(null)
+    onSave(form)
+  }
+
   const getSeverityButtonStyle = (isSelected: boolean) => ({
     height: '42px',
     border: `1px solid ${isSelected ? lightTheme.primary.normal : lightTheme.label.disable}`,
@@ -153,6 +174,7 @@ export function InputFinalInformation({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
+          overflowY: 'auto',
           padding: '0 26px 16px',
           background: lightTheme.background.normal.normal,
         }}
@@ -201,7 +223,7 @@ export function InputFinalInformation({
               label="출발 의료기관"
               placeholder="출발 의료기관을 입력해주세요"
               value={form.departureInstitution}
-              onChange={(value) => updateForm({ departureInstitution: value })}
+              onChange={(value) => handleFieldChange({ departureInstitution: value })}
             />
 
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -216,7 +238,7 @@ export function InputFinalInformation({
               >
                 진통
               </span>
-              {renderSeverityOptions(form.painLevel, (level) => updateForm({ painLevel: level }))}
+              {renderSeverityOptions(form.painLevel, (level) => handleFieldChange({ painLevel: level }))}
             </div>
 
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -231,7 +253,7 @@ export function InputFinalInformation({
               >
                 양수 파수
               </span>
-              {renderSeverityOptions(form.amnioticFluidLeakLevel, (level) => updateForm({ amnioticFluidLeakLevel: level }))}
+              {renderSeverityOptions(form.amnioticFluidLeakLevel, (level) => handleFieldChange({ amnioticFluidLeakLevel: level }))}
             </div>
 
             <FinalInputField
@@ -239,13 +261,13 @@ export function InputFinalInformation({
               placeholder="태아 심박수를 입력해주세요"
               unit="bpm"
               value={form.fetalHeartRate}
-              onChange={(value) => updateForm({ fetalHeartRate: value })}
+              onChange={(value) => handleFieldChange({ fetalHeartRate: value })}
             />
           </div>
         </div>
 
         <div style={{ display: 'grid', gap: '10px' }}>
-          {saveError && (
+          {(stepError || saveError) && (
             <p
               style={{
                 margin: 0,
@@ -256,14 +278,14 @@ export function InputFinalInformation({
                 lineHeight: 1.3,
               }}
             >
-              {saveError}
+              {stepError ?? saveError}
             </p>
           )}
 
           <button
             type="button"
             disabled={isSaving}
-            onClick={() => onSave(form)}
+            onClick={saveForm}
             style={{
               width: '100%',
               height: '42px',

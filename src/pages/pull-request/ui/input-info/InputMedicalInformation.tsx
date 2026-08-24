@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { chevronIcon } from '../../../../shared/config/assets'
 import type { RequestDraftForm, SeverityLevel } from '../../model/requestDraftForm'
+import { validateMedicalRequestDraftForm } from '../../model/requestDraftForm'
 import { InputFinalInformation } from './InputFinalInformation'
 
 type InputMedicalInformationProps = {
@@ -96,6 +97,24 @@ export function InputMedicalInformation({
   saveError = null,
 }: InputMedicalInformationProps) {
   const [isFinalStepOpen, setIsFinalStepOpen] = useState(false)
+  const [stepError, setStepError] = useState<string | null>(null)
+
+  const handleFieldChange = (patch: Partial<RequestDraftForm>) => {
+    setStepError(null)
+    updateForm(patch)
+  }
+
+  const openFinalStep = () => {
+    const validationError = validateMedicalRequestDraftForm(form)
+
+    if (validationError) {
+      setStepError(validationError)
+      return
+    }
+
+    setStepError(null)
+    setIsFinalStepOpen(true)
+  }
 
   const getBleedingButtonStyle = (level: SeverityLevel) => {
     const isSelected = form.bleedingLevel === level
@@ -143,6 +162,7 @@ export function InputMedicalInformation({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
+          overflowY: 'auto',
           padding: '0 26px 16px',
           background: lightTheme.background.normal.normal,
         }}
@@ -192,21 +212,21 @@ export function InputMedicalInformation({
               placeholder="혈압을 입력해주세요"
               unit="mmHg"
               value={form.bloodPressure}
-              onChange={(value) => updateForm({ bloodPressure: value })}
+              onChange={(value) => handleFieldChange({ bloodPressure: value })}
             />
             <MedicalInputField
               label="맥박"
               placeholder="맥박을 입력해주세요"
               unit="bpm"
               value={form.pulse}
-              onChange={(value) => updateForm({ pulse: value })}
+              onChange={(value) => handleFieldChange({ pulse: value })}
             />
             <MedicalInputField
               label="산소포화도"
               placeholder="산소포화도를 입력해주세요"
               unit="%"
               value={form.oxygenSaturation}
-              onChange={(value) => updateForm({ oxygenSaturation: value })}
+              onChange={(value) => handleFieldChange({ oxygenSaturation: value })}
             />
 
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -231,7 +251,7 @@ export function InputMedicalInformation({
                 <button
                   type="button"
                   aria-pressed={form.bleedingLevel === 'none'}
-                  onClick={() => updateForm({ bleedingLevel: 'none' })}
+                  onClick={() => handleFieldChange({ bleedingLevel: 'none' })}
                   style={getBleedingButtonStyle('none')}
                 >
                   없음
@@ -239,7 +259,7 @@ export function InputMedicalInformation({
                 <button
                   type="button"
                   aria-pressed={form.bleedingLevel === 'little'}
-                  onClick={() => updateForm({ bleedingLevel: 'little' })}
+                  onClick={() => handleFieldChange({ bleedingLevel: 'little' })}
                   style={getBleedingButtonStyle('little')}
                 >
                   조금
@@ -247,7 +267,7 @@ export function InputMedicalInformation({
                 <button
                   type="button"
                   aria-pressed={form.bleedingLevel === 'many'}
-                  onClick={() => updateForm({ bleedingLevel: 'many' })}
+                  onClick={() => handleFieldChange({ bleedingLevel: 'many' })}
                   style={getBleedingButtonStyle('many')}
                 >
                   많이
@@ -257,24 +277,41 @@ export function InputMedicalInformation({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsFinalStepOpen(true)}
-          style={{
-            width: '100%',
-            height: '42px',
-            border: 0,
-            borderRadius: '10px',
-            color: lightTheme.background.elevated.normal,
-            fontSize: '18px',
-            fontWeight: 500,
-            lineHeight: 1.3,
-            background: lightTheme.primary.normal,
-            cursor: 'pointer',
-          }}
-        >
-          다음
-        </button>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          {stepError && (
+            <p
+              style={{
+                margin: 0,
+                padding: '0 4px',
+                color: lightTheme.status.destructive,
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.3,
+              }}
+            >
+              {stepError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={openFinalStep}
+            style={{
+              width: '100%',
+              height: '42px',
+              border: 0,
+              borderRadius: '10px',
+              color: lightTheme.background.elevated.normal,
+              fontSize: '18px',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              background: lightTheme.primary.normal,
+              cursor: 'pointer',
+            }}
+          >
+            다음
+          </button>
+        </div>
       </section>
     </main>
   )
