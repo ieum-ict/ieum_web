@@ -8,9 +8,16 @@ import {
 
 type SettingsPageProps = {
   profile: {
+    id: number
     name: string
     email: string
+    username: string
     role?: string
+    organization?: string
+    department?: string
+    phone?: string
+    emergencyPhone?: string
+    region?: string
   } | null
   isLoading?: boolean
   error?: string | null
@@ -65,9 +72,9 @@ export function SettingsPage({
             <h2>{isLoading ? '불러오는 중' : profile?.name || '회원 정보 없음'}</h2>
             {profile ? (
               <p>
+                <span>{profile.username || '아이디 없음'}</span>
+                <span aria-hidden="true">·</span>
                 <span>{profile.email}</span>
-                {profile.role ? <span aria-hidden="true">·</span> : null}
-                {profile.role ? <span>{profile.role}</span> : null}
               </p>
             ) : null}
           </div>
