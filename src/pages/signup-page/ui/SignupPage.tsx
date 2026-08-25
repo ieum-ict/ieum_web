@@ -10,6 +10,7 @@ import {
   statusWifiIcon,
 } from '../../../shared/config/assets'
 import { ApiError, signupWithCredentials } from '../../../shared/api/httpClient'
+import { saveUserProfileDetails } from '../../../entities/settings/api/settingsApi'
 import './signup-page.css'
 
 type SignupStep = 1 | 2 | 3
@@ -21,6 +22,10 @@ type SignupFormData = {
   passwordConfirm: string
   phone: string
   email: string
+  organizationType: OrganizationType
+  department: string
+  organization: string
+  role: string
 }
 type DuplicateCheckState = 'idle' | 'valid' | 'invalid'
 
@@ -31,6 +36,10 @@ const initialSignupForm: SignupFormData = {
   passwordConfirm: '',
   phone: '',
   email: '',
+  organizationType: 'medical',
+  department: '',
+  organization: '',
+  role: '',
 }
 
 const organizationOptions: Array<{
@@ -294,16 +303,18 @@ function StepOne({
 }
 
 function StepTwo({
+  form,
+  onFieldChange,
   onNext,
   isSubmitting,
   error,
 }: {
+  form: SignupFormData
+  onFieldChange: (field: keyof SignupFormData, value: string) => void
   onNext: () => void
   isSubmitting: boolean
   error: string | null
 }) {
-  const [selectedType, setSelectedType] = useState<OrganizationType>('medical')
-
   return (
     <form
       className="signup-card signup-card--step-two"
@@ -323,12 +334,12 @@ function StepTwo({
                 key={option.id}
                 type="button"
                 role="radio"
-                aria-checked={selectedType === option.id}
+                aria-checked={form.organizationType === option.id}
                 className="signup-organization-option"
-                onClick={() => setSelectedType(option.id)}
+                onClick={() => onFieldChange('organizationType', option.id)}
               >
                 <img
-                  src={selectedType === option.id ? signupRadioSelectedIcon : signupRadioIcon}
+                  src={form.organizationType === option.id ? signupRadioSelectedIcon : signupRadioIcon}
                   alt=""
                   draggable="false"
                 />
@@ -341,9 +352,24 @@ function StepTwo({
           </div>
         </div>
 
-        <SignupField label="부서 (선택)" placeholder="부서를 입력해주세요" />
-        <SignupField label="소속 의료기관명" placeholder="소속 의료기관명을 입력해주세요" />
-        <SignupField label="직책 / 역할 (선택)" placeholder="직책 / 역할을 입력해주세요" />
+        <SignupField
+          label="부서 (선택)"
+          placeholder="부서를 입력해주세요"
+          value={form.department}
+          onChange={(value) => onFieldChange('department', value)}
+        />
+        <SignupField
+          label="소속 의료기관명"
+          placeholder="소속 의료기관명을 입력해주세요"
+          value={form.organization}
+          onChange={(value) => onFieldChange('organization', value)}
+        />
+        <SignupField
+          label="직책 / 역할 (선택)"
+          placeholder="직책 / 역할을 입력해주세요"
+          value={form.role}
+          onChange={(value) => onFieldChange('role', value)}
+        />
         {error ? (
           <p className="signup-field__error" role="alert">
             {error}
@@ -466,10 +492,17 @@ export function SignupPage() {
     setIsSubmitting(true)
     setError(null)
 
+    saveUserProfileDetails(form.loginId.trim(), {
+      role: form.role.trim(),
+      organization: form.organization.trim(),
+      department: form.department.trim(),
+      phone: form.phone.trim(),
+    })
+
     try {
       await signupWithCredentials({
         email: form.email,
-        loginId: form.loginId,
+        username: form.loginId,
         password: form.password,
         name: form.name,
       })
@@ -497,7 +530,15 @@ export function SignupPage() {
             onNext={goToStepTwo}
           />
         ) : null}
-        {step === 2 ? <StepTwo onNext={submitSignup} isSubmitting={isSubmitting} error={error} /> : null}
+        {step === 2 ? (
+          <StepTwo
+            form={form}
+            onFieldChange={handleFieldChange}
+            onNext={submitSignup}
+            isSubmitting={isSubmitting}
+            error={error}
+          />
+        ) : null}
         {step === 3 ? <StepComplete /> : null}
       </section>
 

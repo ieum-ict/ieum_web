@@ -2322,6 +2322,20 @@
   background: var(--background-normal);
 }
 
+.profile-edit-row > input:read-only {
+  color: var(--label-alternative);
+}
+
+.profile-edit-row > input:read-only:focus {
+  border-color: #f1f2f4;
+  background: #f7f7f8;
+}
+
+.profile-edit-row > input::placeholder {
+  color: var(--label-assistive);
+  font-weight: 400;
+}
+
 .profile-edit-page__submit {
   flex: 0 0 auto;
   width: calc(100% - 52px);

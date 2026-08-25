@@ -60,6 +60,7 @@ export function clearStoredAuthTokens() {
 
 async function rawRequest<T>(path: string, init: RequestInit, useAuth: boolean): Promise<T> {
   const headers = new Headers(init.headers)
+  headers.set('Accept', 'application/json')
   headers.set('Content-Type', 'application/json')
 
   if (useAuth) {
@@ -87,23 +88,23 @@ async function loginWithDevAccount(): Promise<void> {
 
   const tokens = await rawRequest<AuthTokens>(
     '/auth/login',
-    { method: 'POST', body: JSON.stringify({ loginId: devLoginEmail, password: devLoginPassword }) },
+    { method: 'POST', body: JSON.stringify({ username: devLoginEmail, password: devLoginPassword }) },
     false,
   )
 
   storeTokens(tokens)
 }
 
-function getLoginPath(loginId: string) {
-  return loginId.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
+function getLoginPath(username: string) {
+  return username.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
 }
 
-export async function loginWithCredentials(loginId: string, password: string): Promise<LoginRole> {
-  const normalizedLoginId = loginId.trim()
-  const loginPath = getLoginPath(normalizedLoginId)
+export async function loginWithCredentials(username: string, password: string): Promise<LoginRole> {
+  const normalizedUsername = username.trim()
+  const loginPath = getLoginPath(normalizedUsername)
   const tokens = await rawRequest<AuthTokens>(
     loginPath,
-    { method: 'POST', body: JSON.stringify({ loginId: normalizedLoginId, password }) },
+    { method: 'POST', body: JSON.stringify({ username: normalizedUsername, password }) },
     false,
   )
 
@@ -114,20 +115,27 @@ export async function loginWithCredentials(loginId: string, password: string): P
 
 export async function signupWithCredentials({
   email,
-  loginId,
+  username,
   password,
   name,
 }: {
   email: string
-  loginId: string
+  username: string
   password: string
   name: string
 }): Promise<void> {
+  const payload = {
+    email: email.trim(),
+    username: username.trim(),
+    password,
+    name: name.trim(),
+  }
+
   await rawRequest<void>(
     '/auth/signup',
     {
       method: 'POST',
-      body: JSON.stringify({ email: email.trim(), loginId: loginId.trim(), password, name: name.trim() }),
+      body: JSON.stringify(payload),
     },
     false,
   )
