@@ -4,6 +4,8 @@ import {
   loginKakaoIcon,
   loginLogoIcon,
   loginNaverIcon,
+  signupEyeIcon,
+  signupEyeOffIcon,
   statusBatteryIcon,
   statusCellularIcon,
   statusWifiIcon,
@@ -43,6 +45,7 @@ export function LoginPage() {
   const [hasError, setHasError] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [socialNotice, setSocialNotice] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
   const clearError = () => {
     if (hasError) {
@@ -106,19 +109,29 @@ export function LoginPage() {
 
                 <label className="login-field">
                   <span>비밀번호</span>
-                  <input
-                    className={hasError ? 'is-invalid' : ''}
-                    type="password"
-                    value={password}
-                    placeholder="비밀번호를 입력해주세요"
-                    autoComplete="current-password"
-                    aria-invalid={hasError}
-                    aria-describedby={hasError ? 'login-error-message' : undefined}
-                    onChange={(event) => {
-                      setPassword(event.target.value)
-                      clearError()
-                    }}
-                  />
+                  <div className={`login-password-shell ${hasError ? 'is-invalid' : ''}`}>
+                    <input
+                      type={isPasswordVisible ? 'text' : 'password'}
+                      value={password}
+                      placeholder="비밀번호를 입력해주세요"
+                      autoComplete="current-password"
+                      aria-invalid={hasError}
+                      aria-describedby={hasError ? 'login-error-message' : undefined}
+                      onChange={(event) => {
+                        setPassword(event.target.value)
+                        clearError()
+                      }}
+                    />
+                    <button
+                      className="login-password-shell__toggle"
+                      type="button"
+                      aria-label={isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
+                      aria-pressed={isPasswordVisible}
+                      onClick={() => setIsPasswordVisible((currentValue) => !currentValue)}
+                    >
+                      <img src={isPasswordVisible ? signupEyeOffIcon : signupEyeIcon} alt="" draggable="false" />
+                    </button>
+                  </div>
                   {hasError ? (
                     <span id="login-error-message" className="login-field__error" role="alert">
                       {errorMessage}
