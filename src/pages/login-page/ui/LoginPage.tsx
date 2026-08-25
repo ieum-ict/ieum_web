@@ -42,10 +42,14 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [hasError, setHasError] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [socialNotice, setSocialNotice] = useState('')
 
   const clearError = () => {
     if (hasError) {
       setHasError(false)
+    }
+    if (socialNotice) {
+      setSocialNotice('')
     }
   }
 
@@ -56,13 +60,18 @@ export function LoginPage() {
 
     try {
       await loginWithCredentials(loginId, password)
-      navigateTo('/transport')
+      navigateTo('/pull-request')
     } catch (error) {
       console.error(error instanceof ApiError ? error.message : error)
       setHasError(true)
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSocialLogin = (provider: string) => {
+    setHasError(false)
+    setSocialNotice(`${provider} 로그인은 서버 구현이 완료되면 사용할 수 있습니다.`)
   }
 
   return (
@@ -128,7 +137,7 @@ export function LoginPage() {
           </div>
 
           <div className="login-card__bottom">
-            <button className="login-submit" type="submit">
+            <button className="login-submit" type="submit" disabled={isSubmitting}>
               {isSubmitting ? '로그인 중' : '로그인'}
             </button>
 
@@ -139,16 +148,37 @@ export function LoginPage() {
             </div>
 
             <div className="login-socials" aria-label="소셜 로그인">
-              <button className="login-social login-social--kakao" type="button" aria-label="카카오로 로그인">
+              <button
+                className="login-social login-social--kakao"
+                type="button"
+                aria-label="카카오로 로그인"
+                onClick={() => handleSocialLogin('카카오')}
+              >
                 <img src={loginKakaoIcon} alt="" draggable="false" />
               </button>
-              <button className="login-social login-social--naver" type="button" aria-label="네이버로 로그인">
+              <button
+                className="login-social login-social--naver"
+                type="button"
+                aria-label="네이버로 로그인"
+                onClick={() => handleSocialLogin('네이버')}
+              >
                 <img src={loginNaverIcon} alt="" draggable="false" />
               </button>
-              <button className="login-social login-social--google" type="button" aria-label="구글로 로그인">
+              <button
+                className="login-social login-social--google"
+                type="button"
+                aria-label="구글로 로그인"
+                onClick={() => handleSocialLogin('구글')}
+              >
                 <img src={loginGoogleIcon} alt="" draggable="false" />
               </button>
             </div>
+
+            {socialNotice ? (
+              <p className="login-socials__notice" role="status">
+                {socialNotice}
+              </p>
+            ) : null}
           </div>
         </form>
       </section>

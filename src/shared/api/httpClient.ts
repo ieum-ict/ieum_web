@@ -11,6 +11,8 @@ type AuthTokens = {
   refreshToken: string
 }
 
+export type LoginRole = 'admin' | 'user'
+
 export class ApiError extends Error {
   status: number
 
@@ -92,14 +94,22 @@ async function loginWithDevAccount(): Promise<void> {
   storeTokens(tokens)
 }
 
-export async function loginWithCredentials(email: string, password: string): Promise<void> {
+function getLoginPath(email: string) {
+  return email.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
+}
+
+export async function loginWithCredentials(email: string, password: string): Promise<LoginRole> {
+  const normalizedEmail = email.trim()
+  const loginPath = getLoginPath(normalizedEmail)
   const tokens = await rawRequest<AuthTokens>(
-    '/auth/login',
-    { method: 'POST', body: JSON.stringify({ email, password }) },
+    loginPath,
+    { method: 'POST', body: JSON.stringify({ email: normalizedEmail, password }) },
     false,
   )
 
   storeTokens(tokens)
+
+  return loginPath === '/auth/admin/login' ? 'admin' : 'user'
 }
 
 async function refreshSession(): Promise<void> {
