@@ -87,29 +87,50 @@ async function loginWithDevAccount(): Promise<void> {
 
   const tokens = await rawRequest<AuthTokens>(
     '/auth/login',
-    { method: 'POST', body: JSON.stringify({ email: devLoginEmail, password: devLoginPassword }) },
+    { method: 'POST', body: JSON.stringify({ loginId: devLoginEmail, password: devLoginPassword }) },
     false,
   )
 
   storeTokens(tokens)
 }
 
-function getLoginPath(email: string) {
-  return email.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
+function getLoginPath(loginId: string) {
+  return loginId.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
 }
 
-export async function loginWithCredentials(email: string, password: string): Promise<LoginRole> {
-  const normalizedEmail = email.trim()
-  const loginPath = getLoginPath(normalizedEmail)
+export async function loginWithCredentials(loginId: string, password: string): Promise<LoginRole> {
+  const normalizedLoginId = loginId.trim()
+  const loginPath = getLoginPath(normalizedLoginId)
   const tokens = await rawRequest<AuthTokens>(
     loginPath,
-    { method: 'POST', body: JSON.stringify({ email: normalizedEmail, password }) },
+    { method: 'POST', body: JSON.stringify({ loginId: normalizedLoginId, password }) },
     false,
   )
 
   storeTokens(tokens)
 
   return loginPath === '/auth/admin/login' ? 'admin' : 'user'
+}
+
+export async function signupWithCredentials({
+  email,
+  loginId,
+  password,
+  name,
+}: {
+  email: string
+  loginId: string
+  password: string
+  name: string
+}): Promise<void> {
+  await rawRequest<void>(
+    '/auth/signup',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email: email.trim(), loginId: loginId.trim(), password, name: name.trim() }),
+    },
+    false,
+  )
 }
 
 async function refreshSession(): Promise<void> {
