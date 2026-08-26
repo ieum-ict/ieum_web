@@ -402,7 +402,7 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
             cursor: 'pointer',
           }}
         >
-          상세 보기
+          수용 요청 보내기
         </button>
       </section>
     </main>

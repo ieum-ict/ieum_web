@@ -261,7 +261,7 @@ export function HospitalResponsePage({ onBack }: HospitalResponsePageProps) {
         <button className="update-header__back" type="button" aria-label="수용 요청으로 돌아가기" onClick={onBack}>
           <img src={chevronIcon} alt="" draggable="false" />
         </button>
-        <h1>지원 상세</h1>
+        <h1>병원 응답</h1>
       </header>
 
       <section
