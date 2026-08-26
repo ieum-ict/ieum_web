@@ -51,10 +51,25 @@ type HospitalAddPageProps = SharedProps & {
 
 type ProfileEditPageProps = SharedProps & {
   profile: {
+    id: number
     name: string
     email: string
+    username: string
     role?: string
+    organization?: string
+    department?: string
+    phone?: string
+    emergencyPhone?: string
+    region?: string
   } | null
+  onProfileDetailsSave: (details: {
+    role?: string
+    organization?: string
+    department?: string
+    phone?: string
+    emergencyPhone?: string
+    region?: string
+  }) => void
 }
 
 type HospitalDetailPageProps = SharedProps & {
@@ -646,17 +661,34 @@ export function HospitalAddPage({
   )
 }
 
-export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
+export function ProfileEditPage({ profile, onProfileDetailsSave, onBack }: ProfileEditPageProps) {
   const inputId = useId()
+  const isUnregisteredValue = (value: string) => value.includes('미등록')
+  const resolveProfileFieldValue = (value: string | undefined) => {
+    if (!value || isUnregisteredValue(value)) {
+      return ''
+    }
+
+    return value
+  }
+  const profileFieldPlaceholders = {
+    role: '역할 미등록',
+    organization: '소속 미등록',
+    department: '부서/직책 미등록',
+    phone: '연락처 미등록',
+    emergencyPhone: '비상 연락처 미등록',
+    region: '근무 지역 미등록',
+  }
   const initialProfileForm = {
     name: profile?.name ?? '',
-    role: profile?.role ?? '',
-    organization: '',
-    department: '',
+    username: profile?.username ?? '',
+    role: resolveProfileFieldValue(profile?.role),
+    organization: resolveProfileFieldValue(profile?.organization),
+    department: resolveProfileFieldValue(profile?.department),
     email: profile?.email ?? '',
-    phone: '',
-    emergencyPhone: '',
-    region: '',
+    phone: resolveProfileFieldValue(profile?.phone),
+    emergencyPhone: resolveProfileFieldValue(profile?.emergencyPhone),
+    region: resolveProfileFieldValue(profile?.region),
   }
   const [savedProfilePreview, setSavedProfilePreview] = useState(settingsProfileIcon)
   const [profilePreview, setProfilePreview] = useState(settingsProfileIcon)
@@ -727,6 +759,14 @@ export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
       return
     }
 
+    onProfileDetailsSave({
+      role: profileForm.role,
+      organization: profileForm.organization,
+      department: profileForm.department,
+      phone: profileForm.phone,
+      emergencyPhone: profileForm.emergencyPhone,
+      region: profileForm.region,
+    })
     setSavedProfileForm(profileForm)
     setSavedProfilePreview(profilePreview)
     setIsSaveModalOpen(true)
@@ -771,6 +811,7 @@ export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
             <h2>기본 정보</h2>
             <div className="profile-edit-section__list">
               {[
+                ['아이디', 'username'],
                 ['이름', 'name'],
                 ['역할', 'role'],
                 ['소속', 'organization'],
@@ -781,6 +822,8 @@ export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
                   <input
                     type="text"
                     value={profileForm[field as keyof typeof initialProfileForm]}
+                    placeholder={profileFieldPlaceholders[field as keyof typeof profileFieldPlaceholders]}
+                    readOnly={field === 'username'}
                     onChange={(event) =>
                       handleProfileFieldChange(field as keyof typeof initialProfileForm, event.target.value)
                     }
@@ -805,6 +848,7 @@ export function ProfileEditPage({ profile, onBack }: ProfileEditPageProps) {
                   <input
                     type="text"
                     value={profileForm[field as keyof typeof initialProfileForm]}
+                    placeholder={profileFieldPlaceholders[field as keyof typeof profileFieldPlaceholders]}
                     onChange={(event) =>
                       handleProfileFieldChange(field as keyof typeof initialProfileForm, event.target.value)
                     }

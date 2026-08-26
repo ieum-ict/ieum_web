@@ -9,10 +9,38 @@ import {
   statusCellularIcon,
   statusWifiIcon,
 } from '../../../shared/config/assets'
+import { ApiError, signupWithCredentials } from '../../../shared/api/httpClient'
+import { saveUserProfileDetails } from '../../../entities/settings/api/settingsApi'
 import './signup-page.css'
 
 type SignupStep = 1 | 2 | 3
 type OrganizationType = 'medical' | 'emergency' | 'partner'
+type SignupFormData = {
+  name: string
+  loginId: string
+  password: string
+  passwordConfirm: string
+  phone: string
+  email: string
+  organizationType: OrganizationType
+  department: string
+  organization: string
+  role: string
+}
+type DuplicateCheckState = 'idle' | 'valid' | 'invalid'
+
+const initialSignupForm: SignupFormData = {
+  name: '',
+  loginId: '',
+  password: '',
+  passwordConfirm: '',
+  phone: '',
+  email: '',
+  organizationType: 'medical',
+  department: '',
+  organization: '',
+  role: '',
+}
 
 const organizationOptions: Array<{
   id: OrganizationType
@@ -79,25 +107,41 @@ function SignupField({
   label,
   placeholder,
   type = 'text',
+  value,
+  autoComplete,
   actionLabel,
   icon,
+  onChange,
+  onAction,
+  actionDisabled = false,
 }: {
   label: string
   placeholder: string
   type?: string
+  value?: string
+  autoComplete?: string
   actionLabel?: string
   icon?: string
+  onChange?: (value: string) => void
+  onAction?: () => void
+  actionDisabled?: boolean
 }) {
   return (
     <label className="signup-field">
       <span>{label}</span>
       <div className={actionLabel ? 'signup-field__row' : undefined}>
         <div className="signup-input-shell">
-          <input type={type} placeholder={placeholder} />
+          <input
+            type={type}
+            value={value}
+            placeholder={placeholder}
+            autoComplete={autoComplete}
+            onChange={(event) => onChange?.(event.target.value)}
+          />
           {icon ? <img className="signup-input-shell__icon" src={icon} alt="" draggable="false" /> : null}
         </div>
         {actionLabel ? (
-          <button className="signup-field__side-button" type="button">
+          <button className="signup-field__side-button" type="button" onClick={onAction} disabled={actionDisabled}>
             {actionLabel}
           </button>
         ) : null}
@@ -109,15 +153,17 @@ function SignupField({
 function SignupFooter({
   buttonLabel,
   onPrimary,
+  disabled = false,
   showLoginLink = true,
 }: {
   buttonLabel: string
   onPrimary: () => void
+  disabled?: boolean
   showLoginLink?: boolean
 }) {
   return (
     <div className="signup-footer">
-      <button className="signup-primary-button" type="button" onClick={onPrimary}>
+      <button className="signup-primary-button" type="button" onClick={onPrimary} disabled={disabled}>
         {buttonLabel}
       </button>
       {showLoginLink ? (
@@ -132,7 +178,23 @@ function SignupFooter({
   )
 }
 
-function StepOne({ onNext }: { onNext: () => void }) {
+function StepOne({
+  form,
+  error,
+  duplicateCheck,
+  duplicateMessage,
+  onFieldChange,
+  onDuplicateCheck,
+  onNext,
+}: {
+  form: SignupFormData
+  error: string | null
+  duplicateCheck: DuplicateCheckState
+  duplicateMessage: string | null
+  onFieldChange: (field: keyof SignupFormData, value: string) => void
+  onDuplicateCheck: () => void
+  onNext: () => void
+}) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isPasswordConfirmVisible, setIsPasswordConfirmVisible] = useState(false)
 
@@ -147,14 +209,40 @@ function StepOne({ onNext }: { onNext: () => void }) {
       <SignupHeader step={1} />
 
       <div className="signup-form signup-form--step-one">
-        <SignupField label="이름" placeholder="이름을 입력해주세요" />
-        <SignupField label="아이디" placeholder="아이디를 입력해주세요" actionLabel="중복 확인" />
+        <SignupField
+          label="이름"
+          placeholder="이름을 입력해주세요"
+          value={form.name}
+          autoComplete="name"
+          onChange={(value) => onFieldChange('name', value)}
+        />
+        <SignupField
+          label="아이디"
+          placeholder="아이디를 입력해주세요"
+          value={form.loginId}
+          autoComplete="username"
+          actionLabel={duplicateCheck === 'valid' ? '확인 완료' : '중복 확인'}
+          onChange={(value) => onFieldChange('loginId', value)}
+          onAction={onDuplicateCheck}
+          actionDisabled={duplicateCheck === 'valid'}
+        />
+        {duplicateMessage ? (
+          <p className={`signup-field__message signup-field__message--${duplicateCheck}`} role="status">
+            {duplicateMessage}
+          </p>
+        ) : null}
 
         <div className="signup-field">
           <span>비밀번호</span>
           <div className="signup-password-group">
             <div className="signup-input-shell">
-              <input type={isPasswordVisible ? 'text' : 'password'} placeholder="비밀번호를 입력해주세요" />
+              <input
+                type={isPasswordVisible ? 'text' : 'password'}
+                value={form.password}
+                placeholder="비밀번호를 입력해주세요"
+                autoComplete="new-password"
+                onChange={(event) => onFieldChange('password', event.target.value)}
+              />
               <button
                 className="signup-input-shell__icon-button"
                 type="button"
@@ -168,7 +256,10 @@ function StepOne({ onNext }: { onNext: () => void }) {
             <div className="signup-input-shell">
               <input
                 type={isPasswordConfirmVisible ? 'text' : 'password'}
+                value={form.passwordConfirm}
                 placeholder="비밀번호 다시 입력해주세요"
+                autoComplete="new-password"
+                onChange={(event) => onFieldChange('passwordConfirm', event.target.value)}
               />
               <button
                 className="signup-input-shell__icon-button"
@@ -183,9 +274,27 @@ function StepOne({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
-        <SignupField label="전화번호" placeholder="전화번호를 입력해주세요" />
+        <SignupField
+          label="전화번호"
+          placeholder="전화번호를 입력해주세요"
+          value={form.phone}
+          autoComplete="tel"
+          onChange={(value) => onFieldChange('phone', value)}
+        />
 
-        <SignupField label="이메일" placeholder="이메일을 입력해주세요" type="email" />
+        <SignupField
+          label="이메일"
+          placeholder="이메일을 입력해주세요"
+          type="email"
+          value={form.email}
+          autoComplete="email"
+          onChange={(value) => onFieldChange('email', value)}
+        />
+        {error ? (
+          <p className="signup-field__error" role="alert">
+            {error}
+          </p>
+        ) : null}
       </div>
 
       <SignupFooter buttonLabel="다음으로" onPrimary={onNext} />
@@ -193,9 +302,19 @@ function StepOne({ onNext }: { onNext: () => void }) {
   )
 }
 
-function StepTwo({ onNext }: { onNext: () => void }) {
-  const [selectedType, setSelectedType] = useState<OrganizationType>('medical')
-
+function StepTwo({
+  form,
+  onFieldChange,
+  onNext,
+  isSubmitting,
+  error,
+}: {
+  form: SignupFormData
+  onFieldChange: (field: keyof SignupFormData, value: string) => void
+  onNext: () => void
+  isSubmitting: boolean
+  error: string | null
+}) {
   return (
     <form
       className="signup-card signup-card--step-two"
@@ -215,12 +334,12 @@ function StepTwo({ onNext }: { onNext: () => void }) {
                 key={option.id}
                 type="button"
                 role="radio"
-                aria-checked={selectedType === option.id}
+                aria-checked={form.organizationType === option.id}
                 className="signup-organization-option"
-                onClick={() => setSelectedType(option.id)}
+                onClick={() => onFieldChange('organizationType', option.id)}
               >
                 <img
-                  src={selectedType === option.id ? signupRadioSelectedIcon : signupRadioIcon}
+                  src={form.organizationType === option.id ? signupRadioSelectedIcon : signupRadioIcon}
                   alt=""
                   draggable="false"
                 />
@@ -233,12 +352,32 @@ function StepTwo({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
-        <SignupField label="부서 (선택)" placeholder="부서를 입력해주세요" />
-        <SignupField label="소속 의료기관명" placeholder="소속 의료기관명을 입력해주세요" />
-        <SignupField label="직책 / 역할 (선택)" placeholder="직책 / 역할을 입력해주세요" />
+        <SignupField
+          label="부서 (선택)"
+          placeholder="부서를 입력해주세요"
+          value={form.department}
+          onChange={(value) => onFieldChange('department', value)}
+        />
+        <SignupField
+          label="소속 의료기관명"
+          placeholder="소속 의료기관명을 입력해주세요"
+          value={form.organization}
+          onChange={(value) => onFieldChange('organization', value)}
+        />
+        <SignupField
+          label="직책 / 역할 (선택)"
+          placeholder="직책 / 역할을 입력해주세요"
+          value={form.role}
+          onChange={(value) => onFieldChange('role', value)}
+        />
+        {error ? (
+          <p className="signup-field__error" role="alert">
+            {error}
+          </p>
+        ) : null}
       </div>
 
-      <SignupFooter buttonLabel="다음으로" onPrimary={onNext} />
+      <SignupFooter buttonLabel={isSubmitting ? '가입 중' : '다음으로'} onPrimary={onNext} disabled={isSubmitting} />
     </form>
   )
 }
@@ -267,14 +406,139 @@ function StepComplete() {
 
 export function SignupPage() {
   const [step, setStep] = useState<SignupStep>(1)
+  const [form, setForm] = useState<SignupFormData>(initialSignupForm)
+  const [error, setError] = useState<string | null>(null)
+  const [duplicateCheck, setDuplicateCheck] = useState<DuplicateCheckState>('idle')
+  const [duplicateMessage, setDuplicateMessage] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleFieldChange = (field: keyof SignupFormData, value: string) => {
+    setForm((currentValue) => ({
+      ...currentValue,
+      [field]: value,
+    }))
+    if (error) {
+      setError(null)
+    }
+    if (field === 'loginId') {
+      setDuplicateCheck('idle')
+      setDuplicateMessage(null)
+    }
+  }
+
+  const checkLoginIdDuplicate = () => {
+    const loginId = form.loginId.trim()
+
+    if (loginId.length < 4) {
+      setDuplicateCheck('invalid')
+      setDuplicateMessage('아이디는 4자 이상 입력해주세요.')
+      return
+    }
+
+    if (!/^[A-Za-z0-9._-]+$/.test(loginId)) {
+      setDuplicateCheck('invalid')
+      setDuplicateMessage('아이디는 영문, 숫자, ., _, - 만 사용할 수 있습니다.')
+      return
+    }
+
+    setDuplicateCheck('valid')
+    setDuplicateMessage('사용 가능한 아이디입니다.')
+  }
+
+  const validateStepOne = () => {
+    if (!form.name.trim()) {
+      setError('이름을 입력해주세요.')
+      return false
+    }
+
+    if (duplicateCheck !== 'valid') {
+      setError('아이디 중복 확인을 완료해주세요.')
+      return false
+    }
+
+    if (!form.email.trim()) {
+      setError('이메일을 입력해주세요.')
+      return false
+    }
+
+    if (form.password.length < 8) {
+      setError('비밀번호는 8자 이상 입력해주세요.')
+      return false
+    }
+
+    if (form.password !== form.passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.')
+      return false
+    }
+
+    return true
+  }
+
+  const goToStepTwo = () => {
+    if (!validateStepOne()) {
+      return
+    }
+
+    setError(null)
+    setStep(2)
+  }
+
+  const submitSignup = async () => {
+    if (!validateStepOne()) {
+      setStep(1)
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
+
+    saveUserProfileDetails(form.loginId.trim(), {
+      role: form.role.trim(),
+      organization: form.organization.trim(),
+      department: form.department.trim(),
+      phone: form.phone.trim(),
+    })
+
+    try {
+      await signupWithCredentials({
+        email: form.email,
+        username: form.loginId,
+        password: form.password,
+        name: form.name,
+      })
+      setStep(3)
+    } catch (signupError) {
+      setError(signupError instanceof ApiError ? signupError.message : '회원가입에 실패했습니다.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <main className="signup-page">
       <StatusBar />
 
       <section className="signup-page__content" aria-label="회원가입">
-        {step === 1 ? <StepOne onNext={() => setStep(2)} /> : null}
-        {step === 2 ? <StepTwo onNext={() => setStep(3)} /> : null}
+        {step === 1 ? (
+          <StepOne
+            form={form}
+            error={error}
+            duplicateCheck={duplicateCheck}
+            duplicateMessage={duplicateMessage}
+            onFieldChange={handleFieldChange}
+            onDuplicateCheck={checkLoginIdDuplicate}
+            onNext={goToStepTwo}
+          />
+        ) : null}
+        {step === 2 ? (
+          <StepTwo
+            form={form}
+            onFieldChange={handleFieldChange}
+            onNext={submitSignup}
+            isSubmitting={isSubmitting}
+            error={error}
+          />
+        ) : null}
         {step === 3 ? <StepComplete /> : null}
       </section>
 

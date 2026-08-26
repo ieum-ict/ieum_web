@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import {
   fetchManagedHospitals,
   fetchMyProfile,
+  loadUserProfileDetails,
   logout,
-  type UserProfileResponse,
+  saveUserProfileDetails,
+  type UserProfile,
   updateHospitalResources,
 } from '../../../entities/settings/api/settingsApi'
 import {
@@ -48,7 +50,7 @@ function normalizeHospitalAddForm(form: HospitalAddForm): HospitalAddForm {
 
 export function SettingsRoutePage() {
   const [currentView, setCurrentView] = useState<SettingsRouteView>('home')
-  const [profile, setProfile] = useState<{ name: string; email: string; role?: string } | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isProfileLoading, setIsProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState<string | null>(null)
   const [savedNotificationSettings, setSavedNotificationSettings] =
@@ -84,10 +86,15 @@ export function SettingsRoutePage() {
       }
 
       if (profileResult.status === 'fulfilled') {
-        const nextProfile: UserProfileResponse = profileResult.value
+        const nextProfile = profileResult.value
+        const username = nextProfile.username ?? nextProfile.loginId ?? ''
+        const profileDetails = loadUserProfileDetails(username)
         setProfile({
+          id: nextProfile.id,
           name: nextProfile.name,
+          username,
           email: nextProfile.email,
+          ...profileDetails,
         })
       } else {
         setProfile(null)
@@ -235,6 +242,15 @@ export function SettingsRoutePage() {
     })
   }
 
+  const saveProfileDetails = (details: Omit<UserProfile, 'id' | 'username' | 'name' | 'email'>) => {
+    if (!profile) {
+      return
+    }
+
+    saveUserProfileDetails(profile.username, details)
+    setProfile((currentProfile) => (currentProfile ? { ...currentProfile, ...details } : currentProfile))
+  }
+
   if (currentView === 'alerts') {
     return (
       <AlertSettingsPage
@@ -291,7 +307,7 @@ export function SettingsRoutePage() {
   }
 
   if (currentView === 'profile-edit') {
-    return <ProfileEditPage profile={profile} onBack={returnToSettingsHome} />
+    return <ProfileEditPage profile={profile} onProfileDetailsSave={saveProfileDetails} onBack={returnToSettingsHome} />
   }
 
   return (

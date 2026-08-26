@@ -11,6 +11,8 @@ type AuthTokens = {
   refreshToken: string
 }
 
+export type LoginRole = 'admin' | 'user'
+
 export class ApiError extends Error {
   status: number
 
@@ -58,6 +60,7 @@ export function clearStoredAuthTokens() {
 
 async function rawRequest<T>(path: string, init: RequestInit, useAuth: boolean): Promise<T> {
   const headers = new Headers(init.headers)
+  headers.set('Accept', 'application/json')
   headers.set('Content-Type', 'application/json')
 
   if (useAuth) {
@@ -85,21 +88,57 @@ async function loginWithDevAccount(): Promise<void> {
 
   const tokens = await rawRequest<AuthTokens>(
     '/auth/login',
-    { method: 'POST', body: JSON.stringify({ email: devLoginEmail, password: devLoginPassword }) },
+    { method: 'POST', body: JSON.stringify({ username: devLoginEmail, password: devLoginPassword }) },
     false,
   )
 
   storeTokens(tokens)
 }
 
-export async function loginWithCredentials(email: string, password: string): Promise<void> {
+function getLoginPath(username: string) {
+  return username.trim().toLowerCase() === 'admin@ieum.com' ? '/auth/admin/login' : '/auth/login'
+}
+
+export async function loginWithCredentials(username: string, password: string): Promise<LoginRole> {
+  const normalizedUsername = username.trim()
+  const loginPath = getLoginPath(normalizedUsername)
   const tokens = await rawRequest<AuthTokens>(
-    '/auth/login',
-    { method: 'POST', body: JSON.stringify({ email, password }) },
+    loginPath,
+    { method: 'POST', body: JSON.stringify({ username: normalizedUsername, password }) },
     false,
   )
 
   storeTokens(tokens)
+
+  return loginPath === '/auth/admin/login' ? 'admin' : 'user'
+}
+
+export async function signupWithCredentials({
+  email,
+  username,
+  password,
+  name,
+}: {
+  email: string
+  username: string
+  password: string
+  name: string
+}): Promise<void> {
+  const payload = {
+    email: email.trim(),
+    username: username.trim(),
+    password,
+    name: name.trim(),
+  }
+
+  await rawRequest<void>(
+    '/auth/signup',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    false,
+  )
 }
 
 async function refreshSession(): Promise<void> {

@@ -4,8 +4,23 @@ import type { HospitalAcceptance, HospitalManagementItem } from '../../transport
 export type UserProfileResponse = {
   id: number
   email: string
+  username?: string
+  loginId?: string
   name: string
 }
+
+export type UserProfileDetails = {
+  role?: string
+  organization?: string
+  department?: string
+  phone?: string
+  emergencyPhone?: string
+  region?: string
+}
+
+export type UserProfile = Omit<UserProfileResponse, 'username' | 'loginId'> & {
+  username: string
+} & UserProfileDetails
 
 type HospitalResponse = {
   id: number
@@ -14,6 +29,61 @@ type HospitalResponse = {
   phone?: string
   resourcesContent?: string
   resourcesUpdatedAt?: string
+}
+
+const PROFILE_DETAILS_STORAGE_KEY = 'ieum.userProfileDetails'
+const defaultProfileDetails: Required<UserProfileDetails> = {
+  role: '역할 미등록',
+  organization: '소속 미등록',
+  department: '부서/직책 미등록',
+  phone: '연락처 미등록',
+  emergencyPhone: '비상 연락처 미등록',
+  region: '근무 지역 미등록',
+}
+
+function readStoredProfileDetails(): Record<string, UserProfileDetails> {
+  const storedValue = localStorage.getItem(PROFILE_DETAILS_STORAGE_KEY)
+  if (!storedValue) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(storedValue) as Record<string, UserProfileDetails>
+  } catch {
+    return {}
+  }
+}
+
+export function loadUserProfileDetails(username: string): UserProfileDetails {
+  return {
+    ...defaultProfileDetails,
+    ...readStoredProfileDetails()[username],
+  }
+}
+
+export function saveUserProfileDetails(username: string, details: UserProfileDetails) {
+  const currentDetails = readStoredProfileDetails()
+  const nextUserDetails = {
+    ...currentDetails[username],
+  }
+
+  Object.entries(details).forEach(([key, value]) => {
+    const field = key as keyof UserProfileDetails
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      nextUserDetails[field] = value
+      return
+    }
+
+    delete nextUserDetails[field]
+  })
+
+  const nextDetails = {
+    ...currentDetails,
+    [username]: nextUserDetails,
+  }
+
+  localStorage.setItem(PROFILE_DETAILS_STORAGE_KEY, JSON.stringify(nextDetails))
 }
 
 const resourceDefaults: Pick<
