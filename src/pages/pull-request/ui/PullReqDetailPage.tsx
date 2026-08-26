@@ -8,6 +8,8 @@ type PullReqDetailPageProps = {
   status: PullReqStatus
   description: string
   requestedAt: string
+  isLoading?: boolean
+  error?: string | null
 }
 
 const statusColors = {
@@ -35,7 +37,14 @@ const detailSteps = [
   { label: '인계 완료', time: '-', status: 'upcoming' },
 ] as const
 
-export function PullReqDetailPage({ title, status, description, requestedAt }: PullReqDetailPageProps) {
+export function PullReqDetailPage({
+  title,
+  status,
+  description,
+  requestedAt,
+  isLoading = false,
+  error = null,
+}: PullReqDetailPageProps) {
   const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
 
   if (isResourceDetailOpen) {
@@ -113,6 +122,20 @@ export function PullReqDetailPage({ title, status, description, requestedAt }: P
               >
                 {description}
               </p>
+
+              {isLoading || error ? (
+                <p
+                  style={{
+                    margin: 0,
+                    color: error ? lightTheme.status.destructive : lightTheme.label.alternative,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {error ?? '상세 정보를 불러오는 중...'}
+                </p>
+              ) : null}
             </div>
 
             <div
@@ -275,7 +298,7 @@ export function PullReqDetailPage({ title, status, description, requestedAt }: P
                 cursor: 'pointer',
             }}
           >
-            상세 보기
+            수용 요청하기
           </button>
         </div>
       </section>

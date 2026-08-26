@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
-import { createTransfer } from '../../../entities/transfer/api/useTransferApi'
+import { createTransfer, fetchTransfer } from '../../../entities/transfer/api/useTransferApi'
 import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
-import { usePullRequests } from '../model/usePullRequests'
+import { toPullReqListItem, usePullRequests } from '../model/usePullRequests'
 import type { PullReqListItem } from '../model/usePullRequests'
 import { buildCreateTransferPayload, validateRequestDraftForm } from '../model/requestDraftForm'
 import type { RequestDraftForm } from '../model/requestDraftForm'
@@ -23,6 +23,8 @@ export const PullReqPage = () => {
   const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqListItem | null>(null)
   const [isSavingRequest, setIsSavingRequest] = useState(false)
   const [saveRequestError, setSaveRequestError] = useState<string | null>(null)
+  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
   const { items: pullReqItems, isLoading, error, refetch } = usePullRequests()
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
@@ -58,6 +60,21 @@ export const PullReqPage = () => {
     }
   }
 
+  const handleSelectPullReqItem = async (item: PullReqListItem) => {
+    setSelectedPullReqItem(item)
+    setIsDetailLoading(true)
+    setDetailError(null)
+
+    try {
+      const transfer = await fetchTransfer(item.id)
+      setSelectedPullReqItem(toPullReqListItem(transfer))
+    } catch {
+      setDetailError('전원 요청 상세를 불러오지 못했습니다.')
+    } finally {
+      setIsDetailLoading(false)
+    }
+  }
+
   if (isInputOpen) {
     return (
       <div style={createThemeVars()}>
@@ -79,6 +96,8 @@ export const PullReqPage = () => {
           status={selectedPullReqItem.status}
           description={selectedPullReqItem.description}
           requestedAt={selectedPullReqItem.requestedAt}
+          isLoading={isDetailLoading}
+          error={detailError}
         />
       </div>
     )
@@ -189,7 +208,7 @@ export const PullReqPage = () => {
                   description={item.description}
                   location={item.location}
                   requestedMinutesAgo={item.requestedMinutesAgo}
-                  onClick={() => setSelectedPullReqItem(item)}
+                  onClick={() => void handleSelectPullReqItem(item)}
                 />
               ))
             )}

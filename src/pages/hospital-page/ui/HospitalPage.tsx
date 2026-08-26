@@ -486,6 +486,7 @@ export function HospitalPage() {
   const [searchedHospitals, setSearchedHospitals] = useState<HospitalSearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+  const hasSearchedHospitals = searchedHospitals.length > 0
 
   const handleHospitalSearch = async (keyword: string) => {
     setIsSearching(true)
@@ -529,12 +530,13 @@ export function HospitalPage() {
             background: 'var(--fill-alternative)',
           }}
         >
-          <div
-            style={{
-              display: 'grid',
-              gap: '28px',
-            }}
-          >
+          {hasSearchedHospitals ? (
+            <div
+              style={{
+                display: 'grid',
+                gap: '28px',
+              }}
+            >
             <section
               aria-labelledby="hospital-location-title"
               style={{
@@ -693,36 +695,36 @@ export function HospitalPage() {
                   gap: '12px',
                 }}
               >
-                {searchedHospitals.length > 0 ? (
-                  searchedHospitals.map((hospital) => (
-                    <HospitalRecommendCard
-                      key={hospital.id}
-                      name={hospital.name}
-                      status="available"
-                      address={hospital.address}
-                      phone={hospital.phone}
-                      resourcesContent={hospital.resourcesContent}
-                    />
-                  ))
-                ) : (
-                  <p
-                    style={{
-                      margin: 0,
-                      padding: '18px',
-                      borderRadius: '10px',
-                      color: lightTheme.label.alternative,
-                      fontSize: '15px',
-                      fontWeight: 500,
-                      lineHeight: 1.4,
-                      background: lightTheme.background.elevated.normal,
-                    }}
-                  >
-                    검색 결과가 없습니다.
-                  </p>
-                )}
+                {searchedHospitals.map((hospital) => (
+                  <HospitalRecommendCard
+                    key={hospital.id}
+                    name={hospital.name}
+                    status="available"
+                    address={hospital.address}
+                    phone={hospital.phone}
+                    resourcesContent={hospital.resourcesContent}
+                  />
+                ))}
               </div>
             </section>
-          </div>
+            </div>
+          ) : (
+            <p
+              style={{
+                margin: 0,
+                padding: '18px',
+                borderRadius: '10px',
+                color: lightTheme.label.alternative,
+                fontSize: '16px',
+                fontWeight: 500,
+                lineHeight: 1.4,
+                textAlign: 'center',
+                background: lightTheme.background.elevated.normal,
+              }}
+            >
+              검색하신 병원의 위치가 안뜹니다
+            </p>
+          )}
         </section>
       </main>
     </div>

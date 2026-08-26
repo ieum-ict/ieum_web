@@ -54,7 +54,7 @@ function formatTransferSummary(symptom: string): string {
   return `${formatPregnancySummary(symptom)} · ${formatSymptomSummary(symptom)}`
 }
 
-function toPullReqListItem(transfer: Transfer): PullReqListItem {
+export function toPullReqListItem(transfer: Transfer): PullReqListItem {
   return {
     id: transfer.id,
     title: transfer.patientName,
