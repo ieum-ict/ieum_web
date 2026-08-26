@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import { checkBoxFillIcon, checkBoxIcon, chevronIcon, reportIcon } from '../../../shared/config/assets'
-import { HospitalResponsePage } from './HospitalResponsePage'
+import { HospitalResponsePage as SupportDetailPage } from './HospitalResponsePage'
 import type { PullReqStatus } from './PullReqCard'
 
 type ResourceDetailPageProps = {
@@ -71,7 +71,7 @@ function SectionTitle({ id, children }: { id: string; children: string }) {
 
 export function ResourceDetailPage({ title, status, description, onBack }: ResourceDetailPageProps) {
   const [selectedHospitalIds, setSelectedHospitalIds] = useState(() => new Set([1, 3]))
-  const [isHospitalResponseOpen, setIsHospitalResponseOpen] = useState(false)
+  const [isSupportDetailOpen, setIsSupportDetailOpen] = useState(false)
 
   const toggleHospital = (hospitalId: number) => {
     setSelectedHospitalIds((currentValue) => {
@@ -87,8 +87,8 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
     })
   }
 
-  if (isHospitalResponseOpen) {
-    return <HospitalResponsePage onBack={() => setIsHospitalResponseOpen(false)} />
+  if (isSupportDetailOpen) {
+    return <SupportDetailPage onBack={() => setIsSupportDetailOpen(false)} />
   }
 
   return (
@@ -384,7 +384,7 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
 
         <button
           type="button"
-          onClick={() => setIsHospitalResponseOpen(true)}
+          onClick={() => setIsSupportDetailOpen(true)}
           style={{
             position: 'absolute',
             left: '20px',
@@ -402,7 +402,7 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
             cursor: 'pointer',
           }}
         >
-          수용 요청 보내기
+          상세 보기
         </button>
       </section>
     </main>

@@ -136,7 +136,7 @@ export function HospitalComparePage({ onBack }: HospitalComparePageProps) {
   return (
     <main className="transport-page">
       <header className="update-header" style={{ background: lightTheme.background.elevated.normal }}>
-        <button className="update-header__back" type="button" aria-label="병원 응답으로 돌아가기" onClick={onBack}>
+        <button className="update-header__back" type="button" aria-label="지원 상세로 돌아가기" onClick={onBack}>
           <img src={chevronIcon} alt="" draggable="false" />
         </button>
         <h1>병원 비교</h1>

@@ -261,11 +261,11 @@ export function HospitalResponsePage({ onBack }: HospitalResponsePageProps) {
         <button className="update-header__back" type="button" aria-label="수용 요청으로 돌아가기" onClick={onBack}>
           <img src={chevronIcon} alt="" draggable="false" />
         </button>
-        <h1>병원 응답</h1>
+        <h1>지원 상세</h1>
       </header>
 
       <section
-        aria-label="병원 응답"
+        aria-label="지원 상세"
         style={{
           position: 'relative',
           minHeight: 0,
@@ -292,7 +292,7 @@ export function HospitalResponsePage({ onBack }: HospitalResponsePageProps) {
                 lineHeight: 1.3,
               }}
             >
-              병원 응답 목록
+              지원 상세 목록
               <span
                 style={{
                   marginLeft: '1px',

@@ -298,7 +298,7 @@ export function PullReqDetailPage({
                 cursor: 'pointer',
             }}
           >
-            수용 요청하기
+            상세 보기
           </button>
         </div>
       </section>
