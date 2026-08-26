@@ -14,12 +14,52 @@ export type PullReqListItem = {
   requestedAt: string
 }
 
+const pregnancyPattern = /임신\s*(\d+)\s*주(?:\s*(\d+)\s*일)?/
+const hiddenSymptomPrefixes = ['임신', '혈압', '맥박', '산소포화도', '태아 심박수']
+
+function formatPregnancySummary(symptom: string): string {
+  const pregnancyMatch = symptom.match(pregnancyPattern)
+
+  if (!pregnancyMatch) {
+    return '임신 주수 미입력'
+  }
+
+  const [, weeks, days] = pregnancyMatch
+
+  if (!days || Number(days) === 0) {
+    return `${weeks}주`
+  }
+
+  return `${weeks}주 ${days}일`
+}
+
+function formatSymptomSummary(symptom: string): string {
+  const symptoms = symptom
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part && !hiddenSymptomPrefixes.some((prefix) => part.startsWith(prefix)))
+    .map((part) => {
+      if (part.startsWith('출혈')) return '출혈'
+      if (part.startsWith('진통')) return '진통'
+      if (part.startsWith('양수 파수')) return '양수 파수'
+      return part
+    })
+
+  const uniqueSymptoms = [...new Set(symptoms)]
+
+  return uniqueSymptoms.length > 0 ? uniqueSymptoms.join(', ') : '특이 증상 없음'
+}
+
+function formatTransferSummary(symptom: string): string {
+  return `${formatPregnancySummary(symptom)} · ${formatSymptomSummary(symptom)}`
+}
+
 function toPullReqListItem(transfer: Transfer): PullReqListItem {
   return {
     id: transfer.id,
     title: transfer.patientName,
     status: toPullReqStatusLabel(transfer.status),
-    description: `${transfer.patientAge}세 · ${transfer.symptom}`,
+    description: formatTransferSummary(transfer.symptom),
     location: transfer.departureAddress,
     requestedMinutesAgo: formatElapsedMinutes(transfer.createdAt),
     requestedAt: new Intl.DateTimeFormat('ko-KR', {

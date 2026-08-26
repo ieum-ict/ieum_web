@@ -15,7 +15,7 @@ import type { PullReqStatus } from './PullReqCard'
 
 type PullReqFilter = '전체' | PullReqStatus
 
-const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '대기중', '완료']
+const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '응답대기', '완료']
 
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')

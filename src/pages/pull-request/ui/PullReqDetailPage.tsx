@@ -12,7 +12,7 @@ type PullReqDetailPageProps = {
 
 const statusColors = {
   진행중: lightTheme.status.destructive,
-  대기중: lightTheme.primary.normal,
+  응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
   취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
