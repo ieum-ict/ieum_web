@@ -1,12 +1,11 @@
-import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import type { PullReqStatus } from './PullReqCard'
-import { ResourceDetailPage } from './ResourceDetailPage'
 
 type PullReqDetailPageProps = {
   title: string
   status: PullReqStatus
   description: string
+  location: string
   requestedAt: string
   isLoading?: boolean
   error?: string | null
@@ -41,21 +40,25 @@ export function PullReqDetailPage({
   title,
   status,
   description,
+  location,
   requestedAt,
   isLoading = false,
   error = null,
 }: PullReqDetailPageProps) {
-  const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
-
-  if (isResourceDetailOpen) {
-    return (
-      <ResourceDetailPage
-        title={title}
-        status={status}
-        description={description}
-        onBack={() => setIsResourceDetailOpen(false)}
-      />
+  const openHospitalRoute = () => {
+    window.history.pushState(
+      {
+        hospitalRequest: {
+          title,
+          status,
+          description,
+          currentLocation: location,
+        },
+      },
+      '',
+      '/hospital',
     )
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   return (
@@ -284,7 +287,7 @@ export function PullReqDetailPage({
 
           <button
             type="button"
-            onClick={() => setIsResourceDetailOpen(true)}
+            onClick={openHospitalRoute}
             style={{
                 width: '100%',
                 height: '42px',
@@ -298,7 +301,7 @@ export function PullReqDetailPage({
                 cursor: 'pointer',
             }}
           >
-            상세 보기
+            병원 찾기
           </button>
         </div>
       </section>

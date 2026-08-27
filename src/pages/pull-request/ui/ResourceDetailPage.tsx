@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
+import { searchHospitals } from '../../../entities/hospital/api/useHospitalApi'
+import type { HospitalSearchResult } from '../../../entities/hospital/model/types'
 import { checkBoxFillIcon, checkBoxIcon, chevronIcon, reportIcon } from '../../../shared/config/assets'
 import { HospitalResponsePage as SupportDetailPage } from './HospitalResponsePage'
 import type { PullReqStatus } from './PullReqCard'
@@ -8,17 +10,11 @@ type ResourceDetailPageProps = {
   title: string
   status: PullReqStatus
   description: string
+  currentLocation: string
   onBack: () => void
 }
 
 type HospitalRequestStatus = 'available' | 'conditional'
-
-type SelectedHospital = {
-  id: number
-  name: string
-  status: HospitalRequestStatus
-  distanceKm: number
-}
 
 const statusColors = {
   진행중: lightTheme.status.destructive,
@@ -38,17 +34,38 @@ const hospitalStatusConfig = {
   },
 } satisfies Record<HospitalRequestStatus, { label: string; color: string }>
 
-const selectedHospitals: SelectedHospital[] = [
-  { id: 1, name: 'A대학교병원', status: 'available', distanceKm: 18 },
-  { id: 2, name: 'A대학교병원', status: 'available', distanceKm: 18 },
-  { id: 3, name: 'A대학교병원', status: 'conditional', distanceKm: 18 },
-]
-
 const informationRows = [
   { label: '예상 도착 시간', value: '약 18분 (18km)' },
   { label: '이송 수단', value: '119 구급차' },
   { label: '담당자', value: '홍길동 (전원 담당 간호사)' },
   { label: '연락처', value: '010-1234-5678' },
+]
+
+const fallbackRecommendedHospitals: HospitalSearchResult[] = [
+  {
+    id: 9001,
+    name: 'A대학교병원',
+    address: '경기 성남시 분당구',
+    phone: '18km',
+    resourcesContent: 'NICU 20/24 · 수술실 여유 · 수혈 가능',
+    resourcesUpdatedAt: '2026-08-27T00:00:00.000Z',
+  },
+  {
+    id: 9002,
+    name: 'B여성병원',
+    address: '경기 성남시 수정구',
+    phone: '22km',
+    resourcesContent: 'NICU 12/18 · 수술실 여유 · 수혈 가능',
+    resourcesUpdatedAt: '2026-08-27T00:00:00.000Z',
+  },
+  {
+    id: 9003,
+    name: 'C종합병원',
+    address: '서울 송파구',
+    phone: '27km',
+    resourcesContent: 'NICU 8/12 · 수술실 확인중 · 수혈 가능',
+    resourcesUpdatedAt: '2026-08-27T00:00:00.000Z',
+  },
 ]
 
 function SectionTitle({ id, children }: { id: string; children: string }) {
@@ -69,9 +86,51 @@ function SectionTitle({ id, children }: { id: string; children: string }) {
   )
 }
 
-export function ResourceDetailPage({ title, status, description, onBack }: ResourceDetailPageProps) {
-  const [selectedHospitalIds, setSelectedHospitalIds] = useState(() => new Set([1, 3]))
+function getHospitalRequestStatus(index: number): HospitalRequestStatus {
+  return index === 2 ? 'conditional' : 'available'
+}
+
+export function ResourceDetailPage({ title, status, description, currentLocation, onBack }: ResourceDetailPageProps) {
+  const [recommendedHospitals, setRecommendedHospitals] = useState<HospitalSearchResult[]>([])
+  const [selectedHospitalIds, setSelectedHospitalIds] = useState<Set<number>>(() => new Set())
+  const [isHospitalLoading, setIsHospitalLoading] = useState(true)
+  const [hospitalError, setHospitalError] = useState<string | null>(null)
   const [isSupportDetailOpen, setIsSupportDetailOpen] = useState(false)
+
+  useEffect(() => {
+    let isCancelled = false
+    const keyword = currentLocation.trim() || '병원'
+
+    setIsHospitalLoading(true)
+    setHospitalError(null)
+
+    searchHospitals({ keyword })
+      .then((hospitals) => {
+        if (isCancelled) {
+          return
+        }
+
+        const nextHospitals = hospitals.length > 0 ? hospitals.slice(0, 3) : fallbackRecommendedHospitals
+        setRecommendedHospitals(nextHospitals)
+        setSelectedHospitalIds(new Set(nextHospitals.map((hospital) => hospital.id)))
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setHospitalError(null)
+          setRecommendedHospitals(fallbackRecommendedHospitals)
+          setSelectedHospitalIds(new Set(fallbackRecommendedHospitals.map((hospital) => hospital.id)))
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsHospitalLoading(false)
+        }
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [currentLocation])
 
   const toggleHospital = (hospitalId: number) => {
     setSelectedHospitalIds((currentValue) => {
@@ -114,7 +173,7 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
           style={{
             height: '100%',
             overflowY: 'auto',
-            padding: '62px 20px 72px',
+            padding: '24px 20px 72px',
           }}
         >
           <div
@@ -228,14 +287,14 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px' }}>
                   <span style={{ flex: '0 0 auto', fontSize: '16px', fontWeight: 500 }}>현재 위치</span>
                   <span style={{ minWidth: 0, fontSize: '14px', fontWeight: 400, textAlign: 'right' }}>
-                    경기 성남시 분당구
+                    {currentLocation || '위치 확인중'}
                   </span>
                 </div>
               </div>
             </section>
 
-            <section aria-labelledby="selected-hospital-title" style={{ display: 'grid', gap: '16px' }}>
-              <SectionTitle id="selected-hospital-title">선택 병원</SectionTitle>
+            <section aria-labelledby="recommended-hospital-title" style={{ display: 'grid', gap: '16px' }}>
+              <SectionTitle id="recommended-hospital-title">추천 병원</SectionTitle>
 
               <div
                 style={{
@@ -244,91 +303,110 @@ export function ResourceDetailPage({ title, status, description, onBack }: Resou
                   background: lightTheme.background.normal.normal,
                 }}
               >
-                {selectedHospitals.map((hospital, index) => {
-                  const isSelected = selectedHospitalIds.has(hospital.id)
-                  const statusInfo = hospitalStatusConfig[hospital.status]
+                {isHospitalLoading || hospitalError || recommendedHospitals.length === 0 ? (
+                  <p
+                    style={{
+                      margin: 0,
+                      padding: '18px 19px',
+                      color: hospitalError ? lightTheme.status.destructive : lightTheme.label.alternative,
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {hospitalError ?? (isHospitalLoading ? '추천 병원을 불러오는 중...' : '추천 병원이 없습니다.')}
+                  </p>
+                ) : (
+                  recommendedHospitals.map((hospital, index) => {
+                    const isSelected = selectedHospitalIds.has(hospital.id)
+                    const statusInfo = hospitalStatusConfig[getHospitalRequestStatus(index)]
 
-                  return (
-                    <button
-                      key={hospital.id}
-                      type="button"
-                      onClick={() => toggleHospital(hospital.id)}
-                      style={{
-                        width: '100%',
-                        minHeight: '55px',
-                        padding: '0 19px',
-                        border: 0,
-                        borderBottom:
-                          index === selectedHospitals.length - 1
-                            ? 0
-                            : `1.5px solid ${lightTheme.background.elevated.alternative}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '16px',
-                        textAlign: 'left',
-                        background: lightTheme.background.normal.normal,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <span
+                    return (
+                      <button
+                        key={hospital.id}
+                        type="button"
+                        onClick={() => toggleHospital(hospital.id)}
                         style={{
-                          minWidth: 0,
+                          width: '100%',
+                          minHeight: '55px',
+                          padding: '0 19px',
+                          border: 0,
+                          borderBottom:
+                            index === recommendedHospitals.length - 1
+                              ? 0
+                              : `1.5px solid ${lightTheme.background.elevated.alternative}`,
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '11px',
+                          justifyContent: 'space-between',
+                          gap: '16px',
+                          textAlign: 'left',
+                          background: lightTheme.background.normal.normal,
+                          cursor: 'pointer',
                         }}
                       >
-                        <img
-                          src={isSelected ? checkBoxFillIcon : checkBoxIcon}
-                          alt=""
-                          draggable="false"
-                          style={{ width: '19px', height: '19px', flex: '0 0 auto' }}
-                        />
-                        <strong
+                        <span
                           style={{
                             minWidth: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '11px',
+                          }}
+                        >
+                          <img
+                            src={isSelected ? checkBoxFillIcon : checkBoxIcon}
+                            alt=""
+                            draggable="false"
+                            style={{ width: '19px', height: '19px', flex: '0 0 auto' }}
+                          />
+                          <strong
+                            style={{
+                              minWidth: 0,
+                              overflow: 'hidden',
+                              color: lightTheme.label.normal,
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              lineHeight: 1.3,
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {hospital.name}
+                          </strong>
+                          <span
+                            style={{
+                              flex: '0 0 auto',
+                              padding: '1.6px 7.2px',
+                              borderRadius: '100px',
+                              color: lightTheme.background.normal.normal,
+                              fontSize: '11.2px',
+                              fontWeight: 500,
+                              lineHeight: 1.3,
+                              background: statusInfo.color,
+                            }}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </span>
+
+                        <span
+                          style={{
+                            flex: '0 0 auto',
+                            maxWidth: '110px',
                             overflow: 'hidden',
-                            color: lightTheme.label.normal,
+                            color: lightTheme.label.neutral,
                             fontSize: '14px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             lineHeight: 1.3,
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {hospital.name}
-                        </strong>
-                        <span
-                          style={{
-                            flex: '0 0 auto',
-                            padding: '1.6px 7.2px',
-                            borderRadius: '100px',
-                            color: lightTheme.background.normal.normal,
-                            fontSize: '11.2px',
-                            fontWeight: 500,
-                            lineHeight: 1.3,
-                            background: statusInfo.color,
-                          }}
-                        >
-                          {statusInfo.label}
+                          {hospital.phone || '거리 확인중'}
                         </span>
-                      </span>
-
-                      <span
-                        style={{
-                          flex: '0 0 auto',
-                          color: lightTheme.label.neutral,
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {hospital.distanceKm}km
-                      </span>
-                    </button>
-                  )
-                })}
+                      </button>
+                    )
+                  })
+                )}
               </div>
             </section>
 

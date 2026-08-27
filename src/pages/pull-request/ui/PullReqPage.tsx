@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
-import { createTransfer, fetchTransfer } from '../../../entities/transfer/api/useTransferApi'
+import { createTransfer, fetchTransfer, fetchTransferStatus } from '../../../entities/transfer/api/useTransferApi'
+import { toPullReqStatusLabel } from '../../../entities/transfer/lib/status'
 import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
@@ -66,8 +67,14 @@ export const PullReqPage = () => {
     setDetailError(null)
 
     try {
-      const transfer = await fetchTransfer(item.id)
-      setSelectedPullReqItem(toPullReqListItem(transfer))
+      const [transfer, latestStatus] = await Promise.all([
+        fetchTransfer(item.id),
+        fetchTransferStatus(item.id),
+      ])
+      setSelectedPullReqItem({
+        ...toPullReqListItem(transfer),
+        status: toPullReqStatusLabel(latestStatus),
+      })
     } catch {
       setDetailError('전원 요청 상세를 불러오지 못했습니다.')
     } finally {
@@ -95,6 +102,7 @@ export const PullReqPage = () => {
           title={selectedPullReqItem.title}
           status={selectedPullReqItem.status}
           description={selectedPullReqItem.description}
+          location={selectedPullReqItem.location}
           requestedAt={selectedPullReqItem.requestedAt}
           isLoading={isDetailLoading}
           error={detailError}
