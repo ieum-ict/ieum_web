@@ -1,6 +1,7 @@
 import { lightTheme } from '@ict/design-tokens'
+import { reportIcon } from '../../../shared/config/assets'
 
-export type PullReqStatus = '진행중' | '대기중' | '완료' | '취소'
+export type PullReqStatus = '진행중' | '응답대기' | '완료' | '취소'
 
 export type PullReqCardProps = {
   title: string
@@ -12,11 +13,28 @@ export type PullReqCardProps = {
 }
 
 const statusColors = {
-  진행중: lightTheme.primary.normal,
-  대기중: lightTheme.status.cautionary,
+  진행중: lightTheme.status.destructive,
+  응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
   취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
+
+function formatRequestedElapsed(requestedMinutesAgo: number) {
+  const totalMinutes = Math.max(0, Math.floor(requestedMinutesAgo))
+
+  if (totalMinutes >= 1440) {
+    return `${Math.floor(totalMinutes / 1440)}일전`
+  }
+
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    return minutes > 0 ? `${hours}시간 ${minutes}분전` : `${hours}시간전`
+  }
+
+  return `${totalMinutes}분전`
+}
 
 export const PullReqCard = ({
   title,
@@ -32,12 +50,15 @@ export const PullReqCard = ({
       onClick={onClick}
       style={{
         width: '100%',
-        padding: '18px',
+        minHeight: '132px',
+        display: 'grid',
+        gap: '4px',
+        padding: '20px 27px',
         border: 0,
-        borderRadius: '8px',
+        borderRadius: '10px',
         textAlign: 'left',
         background: 'var(--background-elevated)',
-        boxShadow: '0 8px 24px rgb(0 0 0 / 8%)',
+        boxShadow: '0 2px 4px rgb(0 0 0 / 6%)',
         cursor: onClick ? 'pointer' : 'default',
       }}
     >
@@ -46,28 +67,34 @@ export const PullReqCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
-          marginBottom: '10px',
+          gap: '14px',
         }}
       >
-        <strong
-          style={{
-            color: 'var(--label-normal)',
-            fontSize: '18px',
-            fontWeight: 600,
-            lineHeight: 1.3,
-          }}
-        >
-          {title}
-        </strong>
+        <span style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={reportIcon} alt="" draggable="false" style={{ width: '18px', height: '18px' }} />
+          <strong
+            style={{
+              minWidth: 0,
+              color: 'var(--label-normal)',
+              fontSize: '18px',
+              fontWeight: 600,
+              lineHeight: 1.3,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title}
+          </strong>
+        </span>
         <span
           style={{
             flex: '0 0 auto',
-            padding: '5px 10px',
+            padding: '2px 9px',
             borderRadius: '999px',
             color: lightTheme.background.normal.normal,
-            fontSize: '13px',
-            fontWeight: 600,
+            fontSize: '14px',
+            fontWeight: 500,
             lineHeight: 1.3,
             background: statusColors[status],
           }}
@@ -80,9 +107,12 @@ export const PullReqCard = ({
         style={{
           margin: 0,
           color: lightTheme.label.neutral,
-          fontSize: '15px',
+          fontSize: '16px',
           fontWeight: 500,
           lineHeight: 1.45,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}
       >
         {description}
@@ -92,7 +122,8 @@ export const PullReqCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '18px',
+          paddingTop: '2px',
         }}
       >
         <p
@@ -115,7 +146,7 @@ export const PullReqCard = ({
             lineHeight: 1.45,
           }}
         >
-          요청 {requestedMinutesAgo}분전
+          요청 {formatRequestedElapsed(requestedMinutesAgo)}
         </p>
       </div>
     </button>

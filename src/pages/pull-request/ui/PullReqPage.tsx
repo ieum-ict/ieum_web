@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
-import { createTransfer } from '../../../entities/transfer/api/useTransferApi'
+import { createTransfer, fetchTransfer, fetchTransferStatus } from '../../../entities/transfer/api/useTransferApi'
+import { toPullReqStatusLabel } from '../../../entities/transfer/lib/status'
 import { plusIcon } from '../../../shared/config/assets'
 import { createThemeVars } from '../../../shared/lib/theme'
 import '../../../App.css'
-import { usePullRequests } from '../model/usePullRequests'
+import { toPullReqListItem, usePullRequests } from '../model/usePullRequests'
 import type { PullReqListItem } from '../model/usePullRequests'
 import { buildCreateTransferPayload, validateRequestDraftForm } from '../model/requestDraftForm'
 import type { RequestDraftForm } from '../model/requestDraftForm'
@@ -15,7 +16,7 @@ import type { PullReqStatus } from './PullReqCard'
 
 type PullReqFilter = '전체' | PullReqStatus
 
-const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '대기중', '완료']
+const pullReqFilters: PullReqFilter[] = ['전체', '진행중', '응답대기', '완료']
 
 export const PullReqPage = () => {
   const [selectedFilter, setSelectedFilter] = useState<PullReqFilter>('전체')
@@ -23,6 +24,8 @@ export const PullReqPage = () => {
   const [selectedPullReqItem, setSelectedPullReqItem] = useState<PullReqListItem | null>(null)
   const [isSavingRequest, setIsSavingRequest] = useState(false)
   const [saveRequestError, setSaveRequestError] = useState<string | null>(null)
+  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
   const { items: pullReqItems, isLoading, error, refetch } = usePullRequests()
   const filteredPullReqItems =
     selectedFilter === '전체' ? pullReqItems : pullReqItems.filter((item) => item.status === selectedFilter)
@@ -58,6 +61,27 @@ export const PullReqPage = () => {
     }
   }
 
+  const handleSelectPullReqItem = async (item: PullReqListItem) => {
+    setSelectedPullReqItem(item)
+    setIsDetailLoading(true)
+    setDetailError(null)
+
+    try {
+      const [transfer, latestStatus] = await Promise.all([
+        fetchTransfer(item.id),
+        fetchTransferStatus(item.id),
+      ])
+      setSelectedPullReqItem({
+        ...toPullReqListItem(transfer),
+        status: toPullReqStatusLabel(latestStatus),
+      })
+    } catch {
+      setDetailError('전원 요청 상세를 불러오지 못했습니다.')
+    } finally {
+      setIsDetailLoading(false)
+    }
+  }
+
   if (isInputOpen) {
     return (
       <div style={createThemeVars()}>
@@ -78,7 +102,10 @@ export const PullReqPage = () => {
           title={selectedPullReqItem.title}
           status={selectedPullReqItem.status}
           description={selectedPullReqItem.description}
+          location={selectedPullReqItem.location}
           requestedAt={selectedPullReqItem.requestedAt}
+          isLoading={isDetailLoading}
+          error={detailError}
         />
       </div>
     )
@@ -189,7 +216,7 @@ export const PullReqPage = () => {
                   description={item.description}
                   location={item.location}
                   requestedMinutesAgo={item.requestedMinutesAgo}
-                  onClick={() => setSelectedPullReqItem(item)}
+                  onClick={() => void handleSelectPullReqItem(item)}
                 />
               ))
             )}

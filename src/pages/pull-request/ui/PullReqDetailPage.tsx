@@ -1,18 +1,19 @@
-import { useState } from 'react'
 import { lightTheme } from '@ict/design-tokens'
 import type { PullReqStatus } from './PullReqCard'
-import { ResourceDetailPage } from './ResourceDetailPage'
 
 type PullReqDetailPageProps = {
   title: string
   status: PullReqStatus
   description: string
+  location: string
   requestedAt: string
+  isLoading?: boolean
+  error?: string | null
 }
 
 const statusColors = {
   진행중: lightTheme.status.destructive,
-  대기중: lightTheme.primary.normal,
+  응답대기: lightTheme.status.cautionary,
   완료: lightTheme.status.positive,
   취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
@@ -35,18 +36,29 @@ const detailSteps = [
   { label: '인계 완료', time: '-', status: 'upcoming' },
 ] as const
 
-export function PullReqDetailPage({ title, status, description, requestedAt }: PullReqDetailPageProps) {
-  const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false)
-
-  if (isResourceDetailOpen) {
-    return (
-      <ResourceDetailPage
-        title={title}
-        status={status}
-        description={description}
-        onBack={() => setIsResourceDetailOpen(false)}
-      />
+export function PullReqDetailPage({
+  title,
+  status,
+  description,
+  location,
+  requestedAt,
+  isLoading = false,
+  error = null,
+}: PullReqDetailPageProps) {
+  const openHospitalRoute = () => {
+    window.history.pushState(
+      {
+        hospitalRequest: {
+          title,
+          status,
+          description,
+          currentLocation: location,
+        },
+      },
+      '',
+      '/hospital',
     )
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   return (
@@ -113,6 +125,20 @@ export function PullReqDetailPage({ title, status, description, requestedAt }: P
               >
                 {description}
               </p>
+
+              {isLoading || error ? (
+                <p
+                  style={{
+                    margin: 0,
+                    color: error ? lightTheme.status.destructive : lightTheme.label.alternative,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {error ?? '상세 정보를 불러오는 중...'}
+                </p>
+              ) : null}
             </div>
 
             <div
@@ -261,7 +287,7 @@ export function PullReqDetailPage({ title, status, description, requestedAt }: P
 
           <button
             type="button"
-            onClick={() => setIsResourceDetailOpen(true)}
+            onClick={openHospitalRoute}
             style={{
                 width: '100%',
                 height: '42px',
@@ -275,7 +301,7 @@ export function PullReqDetailPage({ title, status, description, requestedAt }: P
                 cursor: 'pointer',
             }}
           >
-            상세 보기
+            병원 찾기
           </button>
         </div>
       </section>

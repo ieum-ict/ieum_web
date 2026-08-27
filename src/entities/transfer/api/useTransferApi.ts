@@ -9,6 +9,10 @@ export function fetchTransfer(transferId: number): Promise<Transfer> {
   return apiFetch<Transfer>(`/transfers/${transferId}`)
 }
 
+export function fetchTransferStatus(transferId: number): Promise<TransferStatus> {
+  return apiFetch<TransferStatus>(`/transfers/${transferId}/status`)
+}
+
 export function createTransfer(payload: CreateTransferPayload): Promise<Transfer> {
   return apiFetch<Transfer>('/transfers', { method: 'POST', body: JSON.stringify(payload) })
 }

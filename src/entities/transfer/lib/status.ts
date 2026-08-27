@@ -1,6 +1,6 @@
 import type { TransferStatus } from '../model/types'
 
-export type PullReqStatusLabel = '진행중' | '대기중' | '완료' | '취소'
+export type PullReqStatusLabel = '진행중' | '응답대기' | '완료' | '취소'
 
 const hasTimezoneDesignator = /Z$|[+-]\d{2}:?\d{2}$/
 
@@ -17,7 +17,7 @@ export function toPullReqStatusLabel(status: TransferStatus): PullReqStatusLabel
     case 'IN_PROGRESS':
       return '진행중'
     case 'REQUESTED':
-      return '대기중'
+      return '응답대기'
     case 'ARRIVED':
     case 'HANDED_OVER':
       return '완료'

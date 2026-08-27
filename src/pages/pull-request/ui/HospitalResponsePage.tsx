@@ -265,7 +265,7 @@ export function HospitalResponsePage({ onBack }: HospitalResponsePageProps) {
       </header>
 
       <section
-        aria-label="병원 응답"
+        aria-label="지원 상세"
         style={{
           position: 'relative',
           minHeight: 0,
@@ -292,7 +292,7 @@ export function HospitalResponsePage({ onBack }: HospitalResponsePageProps) {
                 lineHeight: 1.3,
               }}
             >
-              병원 응답 목록
+              지원 상세 목록
               <span
                 style={{
                   marginLeft: '1px',
