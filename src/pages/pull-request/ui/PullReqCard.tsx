@@ -19,6 +19,23 @@ const statusColors = {
   취소: lightTheme.label.disable,
 } satisfies Record<PullReqStatus, string>
 
+function formatRequestedElapsed(requestedMinutesAgo: number) {
+  const totalMinutes = Math.max(0, Math.floor(requestedMinutesAgo))
+
+  if (totalMinutes >= 1440) {
+    return `${Math.floor(totalMinutes / 1440)}일전`
+  }
+
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    return minutes > 0 ? `${hours}시간 ${minutes}분전` : `${hours}시간전`
+  }
+
+  return `${totalMinutes}분전`
+}
+
 export const PullReqCard = ({
   title,
   status,
@@ -33,8 +50,10 @@ export const PullReqCard = ({
       onClick={onClick}
       style={{
         width: '100%',
-        minHeight: '116px',
-        padding: '18px 27px',
+        minHeight: '132px',
+        display: 'grid',
+        gap: '4px',
+        padding: '20px 27px',
         border: 0,
         borderRadius: '10px',
         textAlign: 'left',
@@ -48,11 +67,10 @@ export const PullReqCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
-          marginBottom: '4px',
+          gap: '14px',
         }}
       >
-        <span style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img src={reportIcon} alt="" draggable="false" style={{ width: '18px', height: '18px' }} />
           <strong
             style={{
@@ -91,7 +109,7 @@ export const PullReqCard = ({
           color: lightTheme.label.neutral,
           fontSize: '16px',
           fontWeight: 500,
-          lineHeight: 1.3,
+          lineHeight: 1.45,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
@@ -104,7 +122,8 @@ export const PullReqCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '18px',
+          paddingTop: '2px',
         }}
       >
         <p
@@ -127,7 +146,7 @@ export const PullReqCard = ({
             lineHeight: 1.45,
           }}
         >
-          요청 {requestedMinutesAgo}분전
+          요청 {formatRequestedElapsed(requestedMinutesAgo)}
         </p>
       </div>
     </button>
